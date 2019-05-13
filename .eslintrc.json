@@ -1,0 +1,76 @@
+{
+    "root": true,
+    "parser": "babel-eslint",
+    "plugins": [
+        "babel"
+        ,"import"
+    ],
+    "parserOptions": {
+        "sourceType": "module"
+    },
+    "env": {
+        "commonjs": true,
+        "node": true,
+        "es6": true
+    },
+    "extends": [
+        "eslint:recommended"
+    ],
+    "rules": {
+        "linebreak-style": [
+            "error",
+            "unix"
+        ]
+        ,"quotes": [
+            "error",
+            "single"
+        ]
+        ,"semi": [
+            "error",
+            "never"
+        ]
+        ,"comma-style": [
+            "error",
+            "first"
+        ]
+        ,"no-mixed-spaces-and-tabs": [
+            "error", 
+            "smart-tabs"
+        ]
+        ,"no-implicit-globals": [
+            "error"
+        ]
+        ,"no-shadow": "error"
+        ,"no-unexpected-multiline": "error"
+        ,"import/no-commonjs": "error"
+        ,"import/no-unresolved": "error"
+        ,"import/no-absolute-path": "error"
+    }
+    ,"settings": {
+        "import/resolver": {
+            "babel-module": {}
+        }
+    }
+    ,"overrides": [
+        {
+            "files": ["**/*.ts"]
+            ,"parser": "@typescript-eslint/parser"
+            ,"plugins": [
+                "@typescript-eslint"
+            ]
+            ,"rules": {
+                "no-unused-vars": "off"
+                ,"@typescript-eslint/no-unused-vars": "error"
+                ,"@typescript-eslint/no-var-requires": "error"
+                ,"@typescript-eslint/no-explicit-any": "error"
+                ,"@typescript-eslint/interface-name-prefix": ["error", "always"]
+            }
+        }
+        ,{
+            "files": ["**/*.test.{js,ts}"]
+            ,"env": {
+                "mocha": true
+            }
+        }
+    ]
+}

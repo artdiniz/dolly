@@ -1,0 +1,1 @@
+export { works } from 'main'

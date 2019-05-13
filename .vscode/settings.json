@@ -1,0 +1,19 @@
+{
+    "javascript.validate.enable": true,
+    "typescript.validate.enable": true,
+    "tslint.enable": false,
+    "eslint.enable": true,
+    "eslint.validate": [
+        "javascript",
+        "typescript"
+    ],
+    "eslint.provideLintTask": true,
+    "eslint.alwaysShowStatus": true,
+    "eslint.run": "onType",
+    "breadcrumbs.enabled": true,
+    "search.exclude": {
+        "node_modules": true,
+        "bower_components": true,
+        "dist": true
+    }
+}

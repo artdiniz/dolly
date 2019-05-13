@@ -1,0 +1,38 @@
+{   
+    "sourceMaps": "both",
+    "presets": [
+        ["@babel/env", {
+            "useBuiltIns": "usage",
+            "corejs": "^3.0.1"
+        }]
+        ,"@babel/typescript"
+    ],
+    "plugins": [
+        ["@babel/plugin-proposal-class-properties"]
+        ,["@babel/plugin-proposal-object-rest-spread"]
+        ,["module-resolver", {
+            "root": ["./src"]
+            ,"extensions": [".js", ".ts"]
+            ,"cwd": "packagejson"
+        }]
+    ]
+    ,"env": {
+        "test-src": {
+            "plugins": [
+                ["module-resolver", {
+                    "root": ["./src", "./test"]
+                    ,"extensions": [".js", ".ts"]
+                }]
+            ]
+        }
+        ,"test-compiled": {
+            "plugins": [
+                ["module-resolver", {
+                    "root": ["./dist", "./test"]
+                    ,"extensions": [".js"]
+                    ,"cwd": "packagejson"
+                }]
+            ]
+        }
+    }
+}

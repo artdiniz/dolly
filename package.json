@@ -1,0 +1,69 @@
+{
+  "name": "@acaelum/dolly",
+  "version": "0.0.0",
+  "description": "Gerador de apostilas de exercícios guaraná!",
+  "main": "index.js",
+  "bin": {
+    "dolly": "./dist/index.js"
+  },
+  "scripts": {
+    "_build:clean": "rimraf dist",
+    "_build:src": "babel src --out-dir dist --extensions \".ts,.tsx,.js\"",
+    "_mocha:src": "mocha -r ./_setup/test/test-src --colors ",
+    "_mocha:compiled": "mocha -r ./_setup/test/test-compiled --colors ",
+    "build": "npm run _build:clean && npm run _build:src",
+    "type-check": "tsc",
+    "lint": "eslint --ext \".ts,.js\" ./src ./test",
+    "lint:fix": "eslint --fix --ext \".ts,.js\" ./src ./test",
+    "lint:fix-dry-run": "eslint --fix-dry-run --ext \".ts,.js\" ./src ./test",
+    "test:static": "npm run type-check && npm run lint",
+    "test": "npm run test:static && npm run build && npm run _mocha:compiled -- \"test/**/*.test.{js,ts}\"",
+    "watch:build": "chokidar --initial './src/**' 'package.json' -c 'npm run build'",
+    "watch:test": "npm run _mocha:src -- --inspect --reporter min --watch --watch-extensions js,ts,tsx \"test/**/*.test.{js,ts}\"",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.0.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-typescript": "^7.1.0",
+    "@babel/register": "^7.0.0",
+    "@types/chai": "^4.1.7",
+    "@types/common-tags": "^1.4.0",
+    "@types/joi": "^14.0.1",
+    "@types/json-parse-better-errors": "^1.0.0",
+    "@types/lodash": "^4.14.118",
+    "@types/mocha": "^5.2.5",
+    "@types/mock-fs": "^3.6.30",
+    "@types/node": "^10.12.18",
+    "@typescript-eslint/eslint-plugin": "^1.0.0",
+    "@typescript-eslint/parser": "^1.0.0",
+    "babel-eslint": "^11.0.0-beta.0",
+    "babel-plugin-module-resolver": "^3.1.1",
+    "chai": "^4.2.0",
+    "chokidar-cli": "^1.2.1",
+    "eslint": "^5.12.0",
+    "eslint-import-resolver-babel-module": "^5.0.0",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-import": "^2.15.0",
+    "esm": "^3.0.84",
+    "mocha": "^5.2.0",
+    "mock-fs": "^4.7.0",
+    "rimraf": "^2.6.2",
+    "typescript": "^3.2.2",
+    "utility-types": "^3.2.1"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.0.0",
+    "core-js": "^3.0.1",
+    "source-map-support": "^0.5.9"
+  },
+  "keywords": [],
+  "author": "Artur Diniz Adam",
+  "license": " MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

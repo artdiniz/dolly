@@ -1,0 +1,30 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Debug Attach",
+            "port": 9229
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug current test",
+            "cwd": "${fileDirname}",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "_mocha:src",
+                "--",
+                "--inspect-brk",
+                "test/**/${fileBasenameNoExtension}*",
+            ],
+            "port": 9229,
+            "console": "integratedTerminal"
+        }
+    ]
+}
