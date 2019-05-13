@@ -1,7 +1,9 @@
 {
     "javascript.validate.enable": true,
     "typescript.validate.enable": true,
-    "tslint.enable": false,
+    "eslint.workingDirectories": [
+         "src"
+    ],
     "eslint.enable": true,
     "eslint.validate": [
         "javascript",
