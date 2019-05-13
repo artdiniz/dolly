@@ -14,37 +14,18 @@
         "es6": true
     },
     "extends": [
-        "eslint:recommended"
+        "plugin:prettier/recommended"
     ],
     "rules": {
-        "linebreak-style": [
-            "error",
-            "unix"
-        ]
-        ,"quotes": [
-            "error",
-            "single"
-        ]
-        ,"semi": [
-            "error",
-            "never"
-        ]
-        ,"comma-style": [
-            "error",
-            "first"
-        ]
-        ,"no-mixed-spaces-and-tabs": [
-            "error", 
-            "smart-tabs"
-        ]
-        ,"no-implicit-globals": [
-            "error"
-        ]
+        "no-implicit-globals": "error"
         ,"no-shadow": "error"
         ,"no-unexpected-multiline": "error"
         ,"import/no-commonjs": "error"
         ,"import/no-unresolved": "error"
         ,"import/no-absolute-path": "error"
+        ,"prettier/prettier": [ "error", {}, {
+            "usePrettierrc": true
+        }]
     }
     ,"settings": {
         "import/resolver": {

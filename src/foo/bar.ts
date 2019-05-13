@@ -1,1 +1,0 @@
-export { works } from 'main'
