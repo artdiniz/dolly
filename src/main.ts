@@ -79,7 +79,7 @@ if (argsDir === null) {
     .map(fileName => path.join(argsDir, fileName))
 
   const chapterPipelines = Promise.all(
-    files.map((filePath, i) => {
+    files.map(filePath => {
       const chapterFileName = path.basename(filePath).replace(/\.diff$/, '')
 
       return promisify(fs.readFile)(filePath)
@@ -88,9 +88,6 @@ if (argsDir === null) {
         .then(exerciseChapter => toMarkdown(exerciseChapter))
         .then(markdown => {
           const markdownFilePath = path.join(argsDir, chapterFileName + '.md')
-
-          if (i == 1) console.log(markdown)
-
           return promisify(fs.writeFile)(markdownFilePath, markdown).then(
             () => chapterFileName
           )
@@ -102,6 +99,6 @@ if (argsDir === null) {
     console.log('Lendo:', argsDir)
     console.log('\n')
     console.log('Gerando:')
-    names.forEach(name => console.log(name))
+    names.forEach(name => console.log(`    ${name}`))
   })
 }
