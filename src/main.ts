@@ -73,12 +73,13 @@ const argsDir = resolvePathFromCwd(process.argv.slice(2)[0])
 if (argsDir === null) {
   throw new Error('Provided path is empty')
 } else {
+  console.log('Lendo:', argsDir)
   const files = fs
     .readdirSync(argsDir)
     .filter(fileName => path.extname(fileName) === '.diff')
     .map(fileName => path.join(argsDir, fileName))
 
-  const chapterPipelines = Promise.all(
+  Promise.all(
     files.map(filePath => {
       const chapterFileName = path.basename(filePath).replace(/\.diff$/, '')
 
@@ -89,16 +90,10 @@ if (argsDir === null) {
         .then(markdown => {
           const markdownFilePath = path.join(argsDir, chapterFileName + '.md')
           return promisify(fs.writeFile)(markdownFilePath, markdown).then(
-            () => chapterFileName
+            () => markdownFilePath
           )
         })
+        .then(markdownFilePath => console.log('Finished: ' + markdownFilePath))
     })
   )
-
-  chapterPipelines.then(names => {
-    console.log('Lendo:', argsDir)
-    console.log('\n')
-    console.log('Gerando:')
-    names.forEach(name => console.log(`    ${name}`))
-  })
 }
