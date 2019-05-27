@@ -31,7 +31,6 @@
     "@babel/preset-typescript": "^7.1.0",
     "@babel/register": "^7.0.0",
     "@types/chai": "^4.1.7",
-    "@types/common-tags": "^1.4.0",
     "@types/expand-tilde": "^2.0.0",
     "@types/joi": "^14.0.1",
     "@types/json-parse-better-errors": "^1.0.0",
@@ -63,7 +62,8 @@
     "@babel/polyfill": "^7.0.0",
     "core-js": "^3.0.1",
     "expand-tilde": "^2.0.2",
-    "source-map-support": "^0.5.9"
+    "source-map-support": "^0.5.9",
+    "strip-indent": "^3.0.0"
   },
   "keywords": [],
   "author": "Artur Diniz Adam",

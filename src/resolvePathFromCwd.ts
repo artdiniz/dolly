@@ -5,7 +5,7 @@ export const resolvePathFromCwd = function(inputPath: string) {
   const argsDir = inputPath
   const expandedArgsDir = argsDir !== undefined && expandTilde(argsDir)
 
-  if (!expandedArgsDir) return
+  if (!expandedArgsDir) return null
 
   const absolutePath = path.resolve(process.cwd(), expandedArgsDir)
 
