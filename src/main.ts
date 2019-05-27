@@ -2,9 +2,11 @@ import { resolvePathFromCwd } from 'resolvePathFromCwd'
 
 import fs from 'fs'
 import path from 'path'
-import stripIndent from 'strip-indent'
-
 import { promisify } from 'util'
+
+import { html } from 'common-tags'
+
+const code = html
 
 interface IExerciseItem {
   statement: string
@@ -29,38 +31,54 @@ function toExerciseChapter(diff: string): IExerciseChapter {
         statement:
           'Officia consectetur ut ad eu deserunt consectetur ullamco irure esse fugiat. Excepteur tempor cupidatat non proident nulla reprehenderit aliquip. Velit laborum culpa laborum velit quis magna deserunt laboris aliquip mollit. Aliqua fugiat reprehenderit labore deserunt ut et non. Cupidatat et nisi dolor ex et pariatur ex adipisicing. Ut in ullamco voluptate eu. Laborum enim pariatur esse mollit voluptate ullamco.',
         fileName: 'test/show/hang_loose.js',
-        code: 'alo'
+        code: code`
+          function alo(param: tipoShow) {
+            return param.show()
+          }
+        `
+      },
+      {
+        statement:
+          'Officia consectetur ut ad eu deserunt consectetur ullamco irure esse fugiat. Excepteur tempor cupidatat non proident nulla reprehenderit aliquip. Velit laborum culpa laborum velit quis magna deserunt laboris aliquip mollit. Aliqua fugiat reprehenderit labore deserunt ut et non. Cupidatat et nisi dolor ex et pariatur ex adipisicing. Ut in ullamco voluptate eu. Laborum enim pariatur esse mollit voluptate ullamco.',
+        fileName: 'test/show/mini_hang_loose.js',
+        code: code`
+          function sinais(param: tipoShow) {
+            return param.show()
+          }
+        `
       }
     ]
   }
 }
 
+function toItemMarkdown(item: IExerciseItem, itemNumber: number): string {
+  return code`
+    ${itemNumber}. ${item.statement}
+
+     ###### # ${item.fileName}
+
+     \`\`\`${path.extname(item.fileName).replace(/^\./, '')}
+     ${item.code.trim()}
+     \`\`\`
+  `
+}
+
 function toChapterMarkdown(exerciseChapter: IExerciseChapter): string {
-  function toItemMarkdown(item: IExerciseItem, itemNumber: number): string {
-    return stripIndent(`
-      ${itemNumber}. ${item.statement}
-
-      ###### # ${item.fileName}
-      \`\`\`
-      ${item.code}
-      \`\`\`
-    `)
-  }
-
-  const introMarkdown = stripIndent(`
+  const introMarkdown = code`
     # ${exerciseChapter.title}
 
     ## Objetivo
+
     ${exerciseChapter.objective}
 
     ## Passo a passo com código
-  `)
+  `
 
   const exerciseItemsMarkdown = exerciseChapter.items
     .map((item, itemNumber) => toItemMarkdown(item, itemNumber + 1))
-    .join('\n')
+    .join('\n\n')
 
-  return introMarkdown.trim() + '\n' + exerciseItemsMarkdown.trim()
+  return introMarkdown.trim() + '\n\n' + exerciseItemsMarkdown.trim()
 }
 
 process.on('unhandledRejection', (error, rejectedPromise) => {
