@@ -35,7 +35,7 @@ function toExerciseChapter(diff: string): IExerciseChapter {
   }
 }
 
-function toMarkdown(exerciseChapter: IExerciseChapter): string {
+function toChapterMarkdown(exerciseChapter: IExerciseChapter): string {
   function toItemMarkdown(item: IExerciseItem, itemNumber: number): string {
     return stripIndent(`
       ${itemNumber}. ${item.statement}
@@ -44,7 +44,7 @@ function toMarkdown(exerciseChapter: IExerciseChapter): string {
       \`\`\`
       ${item.code}
       \`\`\`
-    `).trim()
+    `)
   }
 
   const introMarkdown = stripIndent(`
@@ -54,13 +54,13 @@ function toMarkdown(exerciseChapter: IExerciseChapter): string {
     ${exerciseChapter.objective}
 
     ## Passo a passo com código
-  `).trim()
+  `)
 
   const exerciseItemsMarkdown = exerciseChapter.items
     .map((item, itemNumber) => toItemMarkdown(item, itemNumber + 1))
     .join('\n')
 
-  return introMarkdown + '\n' + exerciseItemsMarkdown
+  return introMarkdown.trim() + '\n' + exerciseItemsMarkdown.trim()
 }
 
 process.on('unhandledRejection', (error, rejectedPromise) => {
@@ -86,7 +86,7 @@ if (argsDir === null) {
       return promisify(fs.readFile)(filePath)
         .then(fileBuffer => fileBuffer.toString())
         .then(content => toExerciseChapter(content))
-        .then(exerciseChapter => toMarkdown(exerciseChapter))
+        .then(exerciseChapter => toChapterMarkdown(exerciseChapter))
         .then(markdown => {
           const markdownFilePath = path.join(argsDir, chapterFileName + '.md')
           return promisify(fs.writeFile)(markdownFilePath, markdown).then(
