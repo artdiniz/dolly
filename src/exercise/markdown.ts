@@ -2,12 +2,12 @@ import path from 'path'
 
 import { html } from 'common-tags'
 
-import { IExerciseItem } from 'exercise/item'
+import { IExerciseCodeStep } from 'exercise/codeStep'
 import { IExerciseChapter } from 'exercise/chapter'
 
 const code = html
 
-export function toItemMarkdown(item: IExerciseItem, itemNumber: number): string {
+export function toCodeStepMarkdown(item: IExerciseCodeStep, itemNumber: number): string {
   return code`
     ${itemNumber}. ${item.statement}
 
@@ -21,7 +21,7 @@ export function toItemMarkdown(item: IExerciseItem, itemNumber: number): string 
 
 export function toChapterMarkdown(exerciseChapter: IExerciseChapter): string {
   const introMarkdown = code`
-        # ${exerciseChapter.title}
+        # Exercício: ${exerciseChapter.title}
 
         ## Objetivo
 
@@ -30,8 +30,8 @@ export function toChapterMarkdown(exerciseChapter: IExerciseChapter): string {
         ## Passo a passo com código
     `
 
-  const exerciseItemsMarkdown = exerciseChapter.items
-    .map((item, itemNumber) => toItemMarkdown(item, itemNumber + 1))
+  const exerciseItemsMarkdown = exerciseChapter.steps
+    .map((item, itemNumber) => toCodeStepMarkdown(item, itemNumber + 1))
     .join('\n\n')
 
   return introMarkdown.trim() + '\n\n' + exerciseItemsMarkdown.trim()

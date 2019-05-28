@@ -21,21 +21,23 @@ const diffFilesDir = resolvePathFromCwd(diffFilesDirArg)
 if (diffFilesDir === null) {
   throw new Error(`Provided diff files dir is empty`)
 } else {
-  const outputDirCreation = createPath(resolvePathFromCwd(outputDirArg) || path.resolve(diffFilesDir, '../dolly'))
+  const outputDirCreation = createPath(
+    resolvePathFromCwd(outputDirArg) || path.resolve(diffFilesDir, '../dolly')
+  )
 
   console.log('Lendo:', diffFilesDir)
-  const files = fs
+  const diffFiles = fs
     .readdirSync(diffFilesDir)
     .filter(fileName => path.extname(fileName) === '.diff')
     .map(fileName => path.join(diffFilesDir, fileName))
 
   Promise.all(
-    files.map(filePath => {
-      const chapterFileName = path.basename(filePath).replace(/\.diff$/, '')
+    diffFiles.map(diffFilePath => {
+      const chapterFileName = path.basename(diffFilePath).replace(/\.diff$/, '')
 
-      return promisify(fs.readFile)(filePath)
+      return promisify(fs.readFile)(diffFilePath)
         .then(fileBuffer => fileBuffer.toString())
-        .then(content => toExerciseChapter(content))
+        .then(diffContent => toExerciseChapter('', diffContent))
         .then(exerciseChapter => toChapterMarkdown(exerciseChapter))
         .then(markdown =>
           outputDirCreation.then(outputDir => {
