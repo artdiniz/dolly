@@ -2,6 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
 
+import { html as code } from 'common-tags'
+import chalk from 'chalk'
+
 import { resolvePathFromCwd } from 'pathUtils/resolvePathFromCwd'
 import { createPath } from 'pathUtils/resolveAndCreatePathFromCwd'
 
@@ -42,8 +45,17 @@ if (diffFilesDir === null) {
       }
     })
 
+  const biggestChapterNameLength = allChaptersFiles
+    .map(chapter => chapter.chapterFileName)
+    .reduce(
+      (_chapterNameLength, name) =>
+        name.length > _chapterNameLength ? name.length : _chapterNameLength,
+      0
+    )
+
   Promise.all(
     allChaptersFiles.map(chapterFiles => {
+      const writeFile = promisify(fs.writeFile)
       const readFile = promisify(fs.readFile)
 
       const readIntroAndDiff = Promise.all([
@@ -51,20 +63,54 @@ if (diffFilesDir === null) {
         readFile(chapterFiles.diffFileName)
       ])
 
+      const paddedChapterNameForLogs = chapterFiles.chapterFileName.padEnd(
+        biggestChapterNameLength + 2,
+        ' '
+      )
+
       return readIntroAndDiff
         .then(([introFileBuffer, diffFileBuffer]) => [
           introFileBuffer.toString(),
           diffFileBuffer.toString()
         ])
-        .then(([introContent, diffContent]) => toExerciseChapter(introContent, diffContent))
+        .then(([introContent, diffContent]) => {
+          const chapter = toExerciseChapter(introContent, diffContent)
+
+          if (chapter instanceof Error) {
+            const error = chapter
+            error.message = code`
+              Couldn't generate exercise chapter for: ${chapterFiles.chapterFileName}
+
+              ${error.message}
+            `
+            throw error
+          }
+
+          return chapter
+        })
         .then(exerciseChapter => toChapterMarkdown(exerciseChapter))
+        .catch(error =>
+          outputDirCreation.then(outputDir => {
+            const markdownFilePath = path.join(outputDir, chapterFiles.chapterFileName + '.md')
+            return writeFile(markdownFilePath, error).then(() => Promise.reject(markdownFilePath))
+          })
+        )
         .then(markdown =>
           outputDirCreation.then(outputDir => {
             const markdownFilePath = path.join(outputDir, chapterFiles.chapterFileName + '.md')
-            return promisify(fs.writeFile)(markdownFilePath, markdown).then(() => markdownFilePath)
+            return writeFile(markdownFilePath, markdown).then(() => markdownFilePath)
           })
         )
-        .then(markdownFilePath => console.log('Finished: ' + markdownFilePath))
+        .then(markdownFilePath =>
+          console.log(chalk.green('Success ') + paddedChapterNameForLogs + markdownFilePath)
+        )
+        .catch(markdownFilePath =>
+          console.log(
+            chalk.bgRed.white(' Error ') +
+              ' ' +
+              chalk.red(paddedChapterNameForLogs + markdownFilePath)
+          )
+        )
     })
   )
 }

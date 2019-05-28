@@ -1,3 +1,5 @@
+import { stripIndent } from 'common-tags'
+
 import { IExerciseCodeStep, toExerciseCodeSteps } from 'exercise/codeStep'
 
 export interface IExerciseChapter {
@@ -6,18 +8,39 @@ export interface IExerciseChapter {
   steps: IExerciseCodeStep[]
 }
 
-export function toExerciseChapter(intro: string, diff: string): IExerciseChapter {
+export function toExerciseChapter(intro: string, diff: string): IExerciseChapter | Error {
   const [title, objective] = intro.split(/^----*$/gm)
 
+  if (!title || !objective) {
+    return Error(stripIndent`
+      Invalid intro:
+      \`\`\`
+      ${intro}
+      \`\`\`
+      
+      Intro must be in the format:
+      \`\`\`
+      Title dolore cillum occaecat non aliquip.
+      ---
+      Objective lorem laborum dolor officia eiusmod exercitation nostrud. 
+      Fugiat labore aliqua laborum voluptate sit velit ut. 
+      Id occaecat Lorem veniam culpa dolor sint enim consectetur nulla eu pariatur fugiat. 
+      Nostrud tempor velit mollit eu ut tempor qui adipisicing et non exercitation. 
+      Aute ea nisi non et veniam eiusmod. Ut ex aute duis non esse quis nisi. 
+      Commodo sit amet velit sit dolor sunt est aute irure quis enim adipisicing consectetur.
+      \`\`\`
+    `)
+  }
+
   const stepByStepCodeItems = toExerciseCodeSteps(diff)
-  const steps =
-    stepByStepCodeItems instanceof Error
-      ? (console.error(stepByStepCodeItems), [])
-      : stepByStepCodeItems
+
+  if (stepByStepCodeItems instanceof Error) {
+    return stepByStepCodeItems
+  }
 
   return {
-    title: title.trim() || 'TODO Fallback título do exercício',
-    objective: objective.trim() || 'TODO Fallback objetivo do exercício',
-    steps
+    title: title.trim(),
+    objective: objective.trim(),
+    steps: stepByStepCodeItems
   }
 }
