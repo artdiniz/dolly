@@ -1,11 +1,9 @@
 import path from 'path'
 
-import { html } from 'common-tags'
+import { html as code } from 'common-tags'
 
 import { IExerciseCodeStep } from 'exercise/codeStep'
 import { IExerciseChapter } from 'exercise/chapter'
-
-const code = html
 
 export function toCodeStepMarkdown(item: IExerciseCodeStep, itemNumber: number): string {
   return code`
