@@ -14,34 +14,53 @@ process.on('unhandledRejection', (error, rejectedPromise) => {
 })
 
 const diffFilesDirArg = process.argv.slice(2)[0]
-const outputDirArg = process.argv.slice(2)[1]
+const introFilesDirArg = process.argv.slice(2)[1]
+const outputDirArg = process.argv.slice(2)[2]
 
 const diffFilesDir = resolvePathFromCwd(diffFilesDirArg)
+const introFilesDir = resolvePathFromCwd(introFilesDirArg)
 
 if (diffFilesDir === null) {
   throw new Error(`Provided diff files dir is empty`)
+} else if (introFilesDir === null) {
+  throw new Error(`Provided intro files dir is empty`)
 } else {
   const outputDirCreation = createPath(
-    resolvePathFromCwd(outputDirArg) || path.resolve(diffFilesDir, '../dolly')
+    resolvePathFromCwd(outputDirArg) || path.resolve(diffFilesDir, '../generated')
   )
 
   console.log('Lendo:', diffFilesDir)
-  const diffFiles = fs
+  const allChaptersFiles = fs
     .readdirSync(diffFilesDir)
     .filter(fileName => path.extname(fileName) === '.diff')
-    .map(fileName => path.join(diffFilesDir, fileName))
+    .map(diffFileName => {
+      const chapterFileName = path.basename(diffFileName).replace(/\.diff$/, '')
+      return {
+        chapterFileName,
+        introFileName: path.join(introFilesDir, chapterFileName + '.md'),
+        diffFileName: path.join(diffFilesDir, diffFileName)
+      }
+    })
 
   Promise.all(
-    diffFiles.map(diffFilePath => {
-      const chapterFileName = path.basename(diffFilePath).replace(/\.diff$/, '')
+    allChaptersFiles.map(chapterFiles => {
+      const readFile = promisify(fs.readFile)
 
-      return promisify(fs.readFile)(diffFilePath)
-        .then(fileBuffer => fileBuffer.toString())
-        .then(diffContent => toExerciseChapter('', diffContent))
+      const readIntroAndDiff = Promise.all([
+        readFile(chapterFiles.introFileName),
+        readFile(chapterFiles.diffFileName)
+      ])
+
+      return readIntroAndDiff
+        .then(([introFileBuffer, diffFileBuffer]) => [
+          introFileBuffer.toString(),
+          diffFileBuffer.toString()
+        ])
+        .then(([introContent, diffContent]) => toExerciseChapter(introContent, diffContent))
         .then(exerciseChapter => toChapterMarkdown(exerciseChapter))
         .then(markdown =>
           outputDirCreation.then(outputDir => {
-            const markdownFilePath = path.join(outputDir, chapterFileName + '.md')
+            const markdownFilePath = path.join(outputDir, chapterFiles.chapterFileName + '.md')
             return promisify(fs.writeFile)(markdownFilePath, markdown).then(() => markdownFilePath)
           })
         )

@@ -5,13 +5,13 @@ export interface IExerciseCodeStep {
 }
 
 export function toExerciseCodeSteps(diff: string): IExerciseCodeStep[] | Error {
-  const splittedDiff = diff.split(/^diff --(.*)/gm)
+  const splittedDiff = diff.split(/^diff --(.*)/gm).slice(1)
 
   const steps: IExerciseCodeStep[] = []
 
   for (let i = 0; i < splittedDiff.length; i = i + 2) {
-    const diffSignature = splittedDiff[i]
-    const diffBody = splittedDiff[i + 1]
+    const diffSignature = splittedDiff[i].trim()
+    const diffBody = splittedDiff[i + 1].trim()
 
     const diffSignatureGitMatch = diffSignature.match(/^git /)
     const diffSignatureFluxoMatch = diffSignature.match(/^fluxo /)

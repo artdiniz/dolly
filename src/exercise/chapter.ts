@@ -16,8 +16,8 @@ export function toExerciseChapter(intro: string, diff: string): IExerciseChapter
       : stepByStepCodeItems
 
   return {
-    title: title || 'TODO Fallback título do exercício',
-    objective: objective || 'TODO Fallback objetivo do exercício',
+    title: title.trim() || 'TODO Fallback título do exercício',
+    objective: objective.trim() || 'TODO Fallback objetivo do exercício',
     steps
   }
 }
