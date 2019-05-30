@@ -1,116 +1,112 @@
-import fs from 'fs'
 import path from 'path'
-import { promisify } from 'util'
 
-import { html as code } from 'common-tags'
+import { html as code, oneLineTrim } from 'common-tags'
+
+import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
+
+import { generateChapter, IFailedResult } from 'generator/generateChapter'
+import { createDir, readDir, readFile, writeFile } from 'utils/fs'
+
 import chalk from 'chalk'
+import { biggest } from 'utils/reducers/biggest'
 
-import { resolvePathFromCwd } from 'pathUtils/resolvePathFromCwd'
-import { createPath } from 'pathUtils/resolveAndCreatePathFromCwd'
-
-import { toExerciseChapter } from 'exercise/chapter'
-import { toChapterMarkdown } from 'exercise/markdown'
+interface IArgDirectories {
+  diff: string
+  intro: string
+  output: string
+}
 
 process.on('unhandledRejection', (error, rejectedPromise) => {
   console.error('Unhandled Rejection at:', rejectedPromise, 'reason:', error)
   process.exit(1)
 })
 
-const diffFilesDirArg = process.argv.slice(2)[0]
-const introFilesDirArg = process.argv.slice(2)[1]
-const outputDirArg = process.argv.slice(2)[2]
+const cliArgs = process.argv.slice(2)
+const diffFilesDirArg = cliArgs[0]
+const introFilesDirArg = cliArgs[1]
+const outputDirArg = cliArgs[2]
 
-const diffFilesDir = resolvePathFromCwd(diffFilesDirArg)
-const introFilesDir = resolvePathFromCwd(introFilesDirArg)
-
-if (diffFilesDir === null) {
+if (diffFilesDirArg === null) {
   throw new Error(`Provided diff files dir is empty`)
-} else if (introFilesDir === null) {
+} else if (introFilesDirArg === null) {
   throw new Error(`Provided intro files dir is empty`)
 } else {
-  const outputDirCreation = createPath(
-    resolvePathFromCwd(outputDirArg) || path.resolve(diffFilesDir, '../generated')
-  )
+  run({
+    diff: resolvePathFromCwd(diffFilesDirArg),
+    intro: resolvePathFromCwd(introFilesDirArg),
+    output: outputDirArg
+      ? resolvePathFromCwd(outputDirArg)
+      : path.resolve(resolvePathFromCwd(diffFilesDirArg), '../generated')
+  })
+}
 
-  console.log('Lendo:', diffFilesDir)
-  const allChaptersFiles = fs
-    .readdirSync(diffFilesDir)
+async function run(directories: IArgDirectories) {
+  await createDir(directories.output)
+
+  const chapterIds = (await readDir(directories.diff))
     .filter(fileName => path.extname(fileName) === '.diff')
-    .map(diffFileName => {
-      const chapterFileName = path.basename(diffFileName).replace(/\.diff$/, '')
-      return {
-        chapterFileName,
-        introFileName: path.join(introFilesDir, chapterFileName + '.md'),
-        diffFileName: path.join(diffFilesDir, diffFileName)
-      }
-    })
+    .map(diffFileName => path.basename(diffFileName).replace(/\.diff$/, ''))
 
-  const biggestChapterNameLength = allChaptersFiles
-    .map(chapter => chapter.chapterFileName)
-    .reduce(
-      (_chapterNameLength, name) =>
-        name.length > _chapterNameLength ? name.length : _chapterNameLength,
-      0
-    )
-
-  Promise.all(
-    allChaptersFiles.map(chapterFiles => {
-      const writeFile = promisify(fs.writeFile)
-      const readFile = promisify(fs.readFile)
-
-      const readIntroAndDiff = Promise.all([
-        readFile(chapterFiles.introFileName),
-        readFile(chapterFiles.diffFileName)
-      ])
-
-      const paddedChapterNameForLogs = chapterFiles.chapterFileName.padEnd(
-        biggestChapterNameLength + 2,
-        ' '
-      )
-
-      return readIntroAndDiff
-        .then(([introFileBuffer, diffFileBuffer]) => [
-          introFileBuffer.toString(),
-          diffFileBuffer.toString()
-        ])
-        .then(([introContent, diffContent]) => {
-          const chapter = toExerciseChapter(introContent, diffContent)
-
-          if (chapter instanceof Error) {
-            const error = chapter
-            error.message = code`
-              Couldn't generate exercise chapter for: ${chapterFiles.chapterFileName}
-
-              ${error.message}
-            `
-            throw error
-          }
-
-          return chapter
-        })
-        .then(exerciseChapter => toChapterMarkdown(exerciseChapter))
-        .catch(error =>
-          outputDirCreation.then(outputDir => {
-            const markdownFilePath = path.join(outputDir, chapterFiles.chapterFileName + '.md')
-            return writeFile(markdownFilePath, error).then(() => Promise.reject(markdownFilePath))
-          })
-        )
-        .then(markdown =>
-          outputDirCreation.then(outputDir => {
-            const markdownFilePath = path.join(outputDir, chapterFiles.chapterFileName + '.md')
-            return writeFile(markdownFilePath, markdown).then(() => markdownFilePath)
-          })
-        )
-        .then(markdownFilePath =>
-          console.log(chalk.green('Success ') + paddedChapterNameForLogs + markdownFilePath)
-        )
-        .catch(markdownFilePath =>
-          console.log(
-            chalk.bgRed.white(' Error ') +
-              ' ' +
-              chalk.red(paddedChapterNameForLogs + markdownFilePath)
-          )
-        )
+  const generateChapterPromises = chapterIds.map(chapterId =>
+    generateChapter({
+      id: chapterId,
+      intro: readFile(path.join(directories.intro, chapterId + '.md')),
+      diff: readFile(path.join(directories.diff, chapterId + '.diff'))
     })
   )
+
+  const biggestChapterId = chapterIds.reduce(biggest)
+
+  const writeChaptersToFileSystemPromise = Promise.all(
+    generateChapterPromises.map(async generationPromise => {
+      const { success, id, content } = await generationPromise
+
+      const outputFilePath = path.join(directories.output, id + '.md')
+      await writeFile(outputFilePath, content.toString())
+
+      return { success, chapterId: id, outputFilePath }
+    })
+  )
+
+  const writeResults = await writeChaptersToFileSystemPromise
+
+  writeResults.forEach(({ success, chapterId, outputFilePath }) => {
+    const paddedChapterIdForLogs = chapterId.padEnd(biggestChapterId.length + 2, ' ')
+    if (success) {
+      console.log(oneLineTrim`
+        ${chalk.bold.green('Success')} ${paddedChapterIdForLogs} ${outputFilePath}
+      `)
+    } else {
+      console.error(
+        chalk.bold.red(oneLineTrim`
+          ${chalk.bgRed.white(' Error ')} ${paddedChapterIdForLogs} ${outputFilePath}
+        `)
+      )
+    }
+  })
+
+  const errors = (await Promise.all(generateChapterPromises))
+    .filter((res): res is IFailedResult => !res.success)
+    .map(res => res.content)
+
+  if (errors.length) {
+    const errorTitle = (number: Number) =>
+      code`
+        ***************
+        ==  Error ${number}  ==
+        ***************
+      `
+
+    const errorMessage = errors
+      .map(
+        (error, position) => code`
+          ${chalk.bold.red(errorTitle(position + 1))}
+
+            ${chalk.red(error.message)}
+        `
+      )
+      .join('\n\n===\n\n')
+
+    console.error('\n\n' + errorMessage + '\n\n')
+  }
 }

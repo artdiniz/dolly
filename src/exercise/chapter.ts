@@ -8,7 +8,10 @@ export interface IExerciseChapter {
   steps: IExerciseCodeStep[]
 }
 
-export function toExerciseChapter(intro: string, diff: string): IExerciseChapter | Error {
+export function toExerciseChapter(
+  intro: string,
+  diff: string
+): IExerciseChapter | Error {
   const [title, objective] = intro.split(/^----*$/gm)
 
   if (!title || !objective) {
