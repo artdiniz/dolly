@@ -1,3 +1,6 @@
+import path from 'path'
+import { html as code } from 'common-tags';
+
 export interface IExerciseCodeStep {
   statement: string
   fileName: string
@@ -14,15 +17,20 @@ export function toExerciseCodeSteps(diff: string): IExerciseCodeStep[] | Error {
     const diffSignature = splittedDiff[i].trim()
     const diffBody = splittedDiff[i + 1].trim()
 
-    const diffSignatureGitMatch = diffSignature.match(/^git /)
-    const diffSignatureFluxoMatch = diffSignature.match(/^fluxo /)
+    const diffSignatureTypeMatch = diffSignature.match(/^(.+?)[\s]/)
+    const diffType = diffSignatureTypeMatch && diffSignatureTypeMatch[1]
 
-    if (diffSignatureGitMatch) {
+
+    if (diffType === 'git') {
       diffBody
-    } else if (diffSignatureFluxoMatch) {
+    } else if (diffType === 'fluxo') {
       diffBody
     } else {
-      return Error(`Invalid diff signature: ${diffSignature}`)
+      return Error(code`
+        Invalid diff signature: ${diffSignature}
+
+          Unknown diff type: ${diffType}
+      `)
     }
 
     steps.push({
