@@ -14,7 +14,7 @@ export function toCodeStepMarkdown(
 
       ####### ${item.fileName}
 
-      \`\`\`${path.extname(item.fileName).replace(/^\./, '')}
+      \`\`\`${item.codeLanguage}
       ${code(item.code).trim()}
       \`\`\`
   `

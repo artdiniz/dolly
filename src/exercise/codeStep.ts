@@ -1,6 +1,7 @@
 export interface IExerciseCodeStep {
   statement: string
   fileName: string
+  codeLanguage: string
   code: string
 }
 
@@ -27,6 +28,7 @@ export function toExerciseCodeSteps(diff: string): IExerciseCodeStep[] | Error {
     steps.push({
       statement: 'TODO Enunciado do item',
       fileName: 'TODO ' + diffSignature,
+      codeLanguage: path.extname(diffSignature).replace(/^\./, ''),
       code: diffBody
     })
   }
