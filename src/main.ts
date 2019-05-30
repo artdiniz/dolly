@@ -3,12 +3,12 @@ import path from 'path'
 import { html as code, oneLineTrim, stripIndent } from 'common-tags'
 
 import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
+import { biggest } from 'utils/reducers/biggest'
 
 import { generateChapter } from 'generator/generateChapter'
 import { createDir, readDir, readFile, writeFile } from 'utils/fs'
 
 import chalk from 'chalk'
-import { biggest } from 'utils/reducers/biggest'
 
 interface IArgDirectories {
   diff: string
@@ -80,10 +80,10 @@ async function run(directories: IArgDirectories) {
       ...result,
       chapterId: result.chapterId.padEnd(chapterIdPaddingLength, ' ')
     }))
-    .map(result =>
-      chalk.white(oneLineTrim`
+    .map(
+      result => oneLineTrim`
         ${chalk.bold.green('Success')} ${result.chapterId} ${result.outputFilePath}
-      `)
+      `
     )
 
   const failMessages = failedResults
@@ -113,7 +113,7 @@ async function run(directories: IArgDirectories) {
       ({ chapterContent: error }, position) => code`
         ${errorBoxView(`Error ${position + 1}`)}
 
-        ${chalk.red(error.toString())}
+            ${chalk.red(error.toString())}
       `
     )
     .join('\n\n===\n\n')

@@ -1,4 +1,4 @@
-import { stripIndent } from 'common-tags'
+import { html as code } from 'common-tags'
 
 import { IExerciseCodeStep, toExerciseCodeSteps } from 'exercise/codeStep'
 
@@ -15,7 +15,7 @@ export function toExerciseChapter(
   const [title, objective] = intro.split(/^----*$/gm)
 
   if (!title || !objective) {
-    return Error(stripIndent`
+    return Error(code`
       Invalid intro:
       \`\`\`
       ${intro}
