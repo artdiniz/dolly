@@ -5,45 +5,42 @@ import { toChapterMarkdown } from 'exercise/markdown'
 
 export interface ISuccesfullResult {
   success: true
-  content: string
-  id: string
+  chapterContent: string
+  chapterId: string
 }
 
 export interface IFailedResult {
   success: false
-  content: Error
-  id: string
+  chapterContent: Error
+  chapterId: string
 }
 
 export type IChapterGenerationResult = ISuccesfullResult | IFailedResult
 
 interface IChapterGenerationInputInfo {
   id: string
-  intro: string | Promise<string>
-  diff: string | Promise<string>
+  introContent: string
+  diffContent: string
 }
 
 export async function generateChapter(
   chapterInfo: IChapterGenerationInputInfo
 ): Promise<IChapterGenerationResult> {
-  const [introContent, diffContent] = await Promise.all([
-    chapterInfo.intro,
-    chapterInfo.diff
-  ])
+  const { introContent, diffContent, id: chapterId } = chapterInfo
 
   const exerciseChapter = toExerciseChapter(introContent, diffContent)
 
   if (exerciseChapter instanceof Error) {
     const error = exerciseChapter
     error.message = code`
-        Couldn't generate exercise chapter for: ${chapterInfo.id}
+        Couldn't generate exercise chapter for: ${chapterId}
 
         ${error.message}
     `
-    return { success: false, content: error, id: chapterInfo.id }
+    return { success: false, chapterContent: error, chapterId }
   }
 
   const markdownContent = toChapterMarkdown(exerciseChapter)
 
-  return { success: true, content: markdownContent, id: chapterInfo.id }
+  return { success: true, chapterContent: markdownContent, chapterId }
 }
