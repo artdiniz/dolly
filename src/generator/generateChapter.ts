@@ -23,9 +23,9 @@ interface IChapterGenerationInputInfo {
   diffContent: string
 }
 
-export async function generateChapter(
+export function generateChapter(
   chapterInfo: IChapterGenerationInputInfo
-): Promise<IChapterGenerationResult> {
+): IChapterGenerationResult {
   const { introContent, diffContent, id: chapterId } = chapterInfo
 
   const exerciseChapter = toExerciseChapter(introContent, diffContent)
