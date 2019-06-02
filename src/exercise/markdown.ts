@@ -1,11 +1,8 @@
 import { html as code } from 'common-tags'
 
-import { IExerciseStep, IExerciseWithCodeStep } from 'exercise/exerciseStep'
+import { IExerciseStep } from 'exercise/stepByStep/@types/IExerciseStep'
 import { IExerciseChapter } from 'exercise/chapter'
-export function toCodeStepMarkdown(
-  item: IExerciseWithCodeStep,
-  itemNumber: number
-): string {
+export function toCodeStepMarkdown(item: IExerciseStep, itemNumber: number): string {
   if (item.type === 'added' || item.type === 'deleted' || item.type === 'modified') {
     return code`
       ${itemNumber}. TODO Enunciado ADM
@@ -18,13 +15,20 @@ export function toCodeStepMarkdown(
     `
   } else if (item.type === 'renamedAndModified') {
     return code`
-      ${itemNumber}. TODO Enunciado Rename
+      ${itemNumber}. TODO Enunciado Rename and modified
   
         ####### ${item.newFilePath}
   
         \`\`\`${item.codeLanguage}
         ${code(item.code).trim()}
         \`\`\`
+    `
+  } else {
+    return code`
+      ${itemNumber}. TODO Enunciado Rename only
+  
+        ####### ${item.oldFilePath}
+        ####### ${item.newFilePath}
     `
   }
 }
