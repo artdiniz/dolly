@@ -10,12 +10,6 @@ import { createDir, readDir, readFile, writeFile } from 'utils/fs'
 
 import chalk from 'chalk'
 
-interface IArgDirectories {
-  diff: string
-  intro: string
-  output: string
-}
-
 process.on('unhandledRejection', (error, rejectedPromise) => {
   console.error('Unhandled Rejection at:', rejectedPromise, 'reason:', error)
   process.exit(1)
@@ -38,6 +32,12 @@ if (diffFilesDirArg === null) {
       ? resolvePathFromCwd(outputDirArg)
       : path.resolve(resolvePathFromCwd(diffFilesDirArg), '../generated')
   })
+}
+
+interface IArgDirectories {
+  diff: string
+  intro: string
+  output: string
 }
 
 async function run(directories: IArgDirectories) {
