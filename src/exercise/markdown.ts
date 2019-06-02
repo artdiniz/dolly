@@ -1,23 +1,32 @@
-import path from 'path'
-
 import { html as code } from 'common-tags'
 
-import { IExerciseCodeStep } from 'exercise/codeStep'
+import { IExerciseStep, IExerciseWithCodeStep } from 'exercise/exerciseStep'
 import { IExerciseChapter } from 'exercise/chapter'
-
 export function toCodeStepMarkdown(
-  item: IExerciseCodeStep,
+  item: IExerciseWithCodeStep,
   itemNumber: number
 ): string {
-  return code`
-    ${itemNumber}. ${item.statement}
-
-      ####### ${item.fileName}
-
-      \`\`\`${item.codeLanguage}
-      ${code(item.code).trim()}
-      \`\`\`
-  `
+  if (item.type === 'added' || item.type === 'deleted' || item.type === 'modified') {
+    return code`
+      ${itemNumber}. TODO Enunciado ADM
+  
+        ####### ${item.filePath}
+  
+        \`\`\`${item.codeLanguage}
+        ${code(item.code).trim()}
+        \`\`\`
+    `
+  } else if (item.type === 'renamedAndModified') {
+    return code`
+      ${itemNumber}. TODO Enunciado Rename
+  
+        ####### ${item.newFilePath}
+  
+        \`\`\`${item.codeLanguage}
+        ${code(item.code).trim()}
+        \`\`\`
+    `
+  }
 }
 
 export function toChapterMarkdown(exerciseChapter: IExerciseChapter): string {
