@@ -69,7 +69,8 @@
     "expand-tilde": "^2.0.2",
     "mkdirp": "^0.5.1",
     "source-map-support": "^0.5.9",
-    "strip-indent": "^3.0.0"
+    "strip-indent": "^3.0.0",
+    "what-the-diff": "^0.6.0"
   },
   "keywords": [],
   "author": "Artur Diniz Adam",
