@@ -3,7 +3,7 @@ import path from 'path'
 import { parse as parseDiff } from 'what-the-diff'
 import { html as code } from 'common-tags'
 
-import { IRawDiffItem } from 'exercise/stepByStep/diffParsers/@types'
+import { IRawDiffItem, IDiffParser } from 'exercise/stepByStep/diffParsers/@types'
 import { IExerciseStep } from 'exercise/stepByStep/@types'
 
 function toFilePath(gitDiffFilePath: string) {
@@ -18,17 +18,23 @@ function toLanguageIdentifier(fileName: string): string {
   return path.extname(fileName).replace(/^\./, '')
 }
 
-export function parseGitDiff({
-  header,
-  body
-}: IRawDiffItem): IExerciseStep[] | Error {
-  const diffs = parseDiff(header + body)
+function shouldParse(diffType: string) {
+  return diffType === 'git'
+}
+
+function parseGitDiff({ header, body }: IRawDiffItem): IExerciseStep[] | Error {
+  let diffs
+  try {
+    diffs = parseDiff(header + body)
+  } catch (error) {
+    return error
+  }
 
   if (diffs.length > 1) {
     return new Error(code`
-    Diff parsing failed. Only single diffs are supported but you provded ${
-      diffs.length
-    } ${diffs.length === 1 ? 'diff' : 'diffs'}
+      Diff parsing failed. Only single diffs are supported but you provided ${
+        diffs.length
+      } ${diffs.length === 1 ? 'diff' : 'diffs'}
     `)
   }
 
@@ -74,4 +80,9 @@ export function parseGitDiff({
   }
 
   return steps
+}
+
+export const gitDiffParser: IDiffParser = {
+  parse: parseGitDiff,
+  shouldParse
 }

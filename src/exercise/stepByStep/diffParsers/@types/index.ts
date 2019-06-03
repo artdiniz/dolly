@@ -1,2 +1,2 @@
-export * from './DiffParseFunction'
 export * from './IRawDiffItem'
+export * from './IDiffParser'

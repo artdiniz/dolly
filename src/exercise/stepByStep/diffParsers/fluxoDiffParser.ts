@@ -1,12 +1,13 @@
 import { html as code } from 'common-tags'
 
-import { IRawDiffItem } from 'exercise/stepByStep/diffParsers/@types'
+import { IRawDiffItem, IDiffParser } from 'exercise/stepByStep/diffParsers/@types'
 import { IExerciseStep } from 'exercise/stepByStep/@types'
 
-export function parseFluxoDiff({
-  header,
-  body
-}: IRawDiffItem): IExerciseStep[] | Error {
+function shouldParse(diffType: string) {
+  return diffType === 'fluxo'
+}
+
+function parseFluxoDiff({ header, body }: IRawDiffItem): IExerciseStep[] | Error {
   const steps: IExerciseStep[] = []
 
   const fluxoDiffFileTypes = ['change_only_files']
@@ -51,4 +52,9 @@ export function parseFluxoDiff({
     })
   }
   return steps
+}
+
+export const fluxoDiffParser: IDiffParser = {
+  parse: parseFluxoDiff,
+  shouldParse
 }

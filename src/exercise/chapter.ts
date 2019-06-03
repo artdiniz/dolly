@@ -1,7 +1,7 @@
 import { html as code } from 'common-tags'
 
 import { IExerciseStep } from 'exercise/stepByStep/@types'
-import { toExerciseSteps } from 'exercise/stepByStep/exerciseStep'
+import { toExerciseSteps } from 'exercise/stepByStep/exerciseSteps'
 
 export interface IExerciseChapter {
   title: string
