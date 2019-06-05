@@ -6,6 +6,8 @@ import { IChange, IChangeAddedFile } from 'changes/@types'
 import { IExerciseStepsItem } from 'exercise/@types'
 import { IChangeToExerciseItemParser } from 'exercise/changeParsers/@types'
 
+import { toFolderName } from 'exercise/changeParsers/util/toFolderName'
+
 function shouldParse(changes: IChange[]): changes is IChangeAddedFile[] {
   return (
     changes.length === 1 && changes[0].type === 'added' && !('code' in changes[0])
@@ -23,10 +25,12 @@ function parse(
   const folder = path.dirname(change.filePath)
   const fileName = path.basename(change.filePath)
 
+  const displayFolderName = toFolderName(folder)
+
   return {
     position: changePosition,
     statement: code`
-      Adicione o arquivo ${fileName} na pasta ${folder}. Este arquivo é um arquivo que foi disponibilizado já pronto para você.
+      Adicione o arquivo ${fileName} na pasta ${displayFolderName}. Este arquivo é um arquivo que foi disponibilizado já pronto para você.
     `
   }
 }

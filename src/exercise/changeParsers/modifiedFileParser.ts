@@ -6,6 +6,8 @@ import { IChange, IChangeModifiedFileWithCode } from 'changes/@types'
 import { IExerciseStepsItem } from 'exercise/@types'
 import { IChangeToExerciseItemParser } from 'exercise/changeParsers/@types'
 
+import { toFolderName } from 'exercise/changeParsers/util/toFolderName'
+
 function shouldParse(changes: IChange[]): changes is IChangeModifiedFileWithCode[] {
   return (
     changes.length === 1 && changes[0].type === 'modified' && 'code' in changes[0]
@@ -20,10 +22,12 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
   const folder = path.dirname(change.filePath)
   const fileName = path.basename(change.filePath)
 
+  const displayFolderName = toFolderName(folder)
+
   return {
     position: changePosition,
     statement: code`
-      No arquivo ${fileName} na pasta ${folder} faça as seguintes alterações:
+      No arquivo ${fileName} na pasta ${displayFolderName} faça as seguintes alterações:
     `,
     codeChanges: [
       {

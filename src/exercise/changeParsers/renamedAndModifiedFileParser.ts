@@ -6,6 +6,8 @@ import { IChange, IChangeRenamedModifiedFileWithCode } from 'changes/@types'
 import { IExerciseStepsItem } from 'exercise/@types'
 import { IChangeToExerciseItemParser } from 'exercise/changeParsers/@types'
 
+import { toFolderName } from 'exercise/changeParsers/util/toFolderName'
+
 function shouldParse(
   changes: IChange[]
 ): changes is IChangeRenamedModifiedFileWithCode[] {
@@ -32,15 +34,15 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
 
   if (hasMovedOnly) {
     statement = code`
-      Mova o arquivo ${newFileName} para a pasta ${newFolder}. No momento este arquivo está em ${oldFolder}.
+      Mova o arquivo ${newFileName} para a pasta ${toFolderName(newFolder)}. No momento este arquivo está na pasta ${toFolderName(oldFolder)}.
     `
   } else if (hasRenamedFileOnly) {
     statement = code`
-      Na pasta ${oldFolder}, renomeie o arquivo ${oldFileName} para ${newFileName}
+      Na pasta ${toFolderName(oldFolder)}, renomeie o arquivo ${oldFileName} para ${newFileName}
     `
   } else if (hasMovedAndRenamed) {
     statement = code`
-      Mova o arquivo ${oldFileName} para a pasta ${newFolder} e o renomeie para ${newFileName}. No momento o arquivo está em ${oldFolder}.
+      Mova o arquivo ${oldFileName} para a pasta ${toFolderName(newFolder)} e o renomeie para ${newFileName}. No momento o arquivo está na pasta ${toFolderName(oldFolder)}.
     `
   } else {
     throw new Error(`This shouldn't happen`)

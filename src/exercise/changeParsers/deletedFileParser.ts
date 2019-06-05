@@ -6,6 +6,8 @@ import { IChange, IChangeDeletedFile } from 'changes/@types'
 import { IExerciseStepsItem } from 'exercise/@types'
 import { IChangeToExerciseItemParser } from 'exercise/changeParsers/@types'
 
+import { toFolderName } from 'exercise/changeParsers/util/toFolderName'
+
 function shouldParse(changes: IChange[]): changes is IChangeDeletedFile[] {
   return changes.length === 1 && changes[0].type === 'deleted'
 }
@@ -18,10 +20,12 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
   const folder = path.dirname(change.filePath)
   const fileName = path.basename(change.filePath)
 
+  const displayFolderName = toFolderName(folder)
+
   return {
     position: changePosition,
     statement: code`
-      Remova o arquivo ${fileName} na pasta ${folder}.
+      Remova o arquivo ${fileName} na pasta ${displayFolderName}.
     `
   }
 }
