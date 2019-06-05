@@ -1,15 +1,19 @@
 import { html as code } from 'common-tags'
 
-import { IRawDiffItem, IDiffParser } from 'exercise/stepByStep/diffParsers/@types'
-import { IExerciseStep } from 'exercise/stepByStep/@types'
+import { IRawDiffItem, IDiffParser } from 'changes/diffParsers/@types'
+import { IChange, IChangeFile } from 'changes/@types'
+
+function toStepType(diffType: 'A' | 'D'): 'added' | 'deleted' {
+  if (diffType === 'A') return 'added'
+  else if (diffType === 'D') return 'deleted'
+  else throw new Error(`Invalid difftype ${diffType}`)
+}
 
 function shouldParse(diffType: string) {
   return diffType === 'fluxo'
 }
 
-function parseFluxoDiff({ header, body }: IRawDiffItem): IExerciseStep[] | Error {
-  const steps: IExerciseStep[] = []
-
+function parseFluxoDiff({ header, body }: IRawDiffItem): IChange[] | Error {
   const fluxoDiffFileTypes = ['change_only_files']
 
   const headerDiffFileTypeMatch = header.match(/^diff --fluxo a\/(.+) b\/(.+)/)
@@ -33,25 +37,28 @@ function parseFluxoDiff({ header, body }: IRawDiffItem): IExerciseStep[] | Error
       `)
   }
 
+  const changes: IChange[] = []
   const fluxoFileType = headerDiffFileTypeMatch[1]
 
   if (fluxoFileType === 'change_only_files') {
     const changeOnlyFilesMatch = body.match(/^([AD]\t.+)/gm)
-    if (!changeOnlyFilesMatch) {
+    if (changeOnlyFilesMatch === null) {
       return Error(code`
-          Invalid empty "change_only_files" diff
-        `)
+        Invalid empty "change_only_files" diff
+      `)
     }
 
-    changeOnlyFilesMatch.map(typeAndFile => {
-      const [modType, filePath] = typeAndFile.split('\t')
+    const parsedSteps = changeOnlyFilesMatch.map(typeAndFile => {
+      const [modType, filePath] = typeAndFile.split('\t') as [('A' | 'D'), string]
       return {
-        type: modType,
+        type: toStepType(modType),
         filePath: filePath
-      }
+      } as IChangeFile
     })
+
+    changes.push(...parsedSteps)
   }
-  return steps
+  return changes
 }
 
 export const fluxoDiffParser: IDiffParser = {

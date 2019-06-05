@@ -2,7 +2,7 @@
   "name": "@acaelum/dolly",
   "version": "0.0.0",
   "description": "Gerador de apostilas de exercícios guaraná!",
-  "main": "index.js",
+  "main": "src/index.js",
   "bin": {
     "dolly": "./bin/index.js"
   },
@@ -12,7 +12,7 @@
     "_mocha:src": "mocha -r ./_setup/test/test-src --colors ",
     "_mocha:compiled": "mocha -r ./_setup/test/test-compiled --colors ",
     "build": "npm run _build:clean && npm run _build:src",
-    "type-check": "tsc",
+    "type-check": "tsc -p .",
     "lint": "eslint --ext \".ts,.js\" ./src ./test",
     "lint:fix": "eslint --fix --ext \".ts,.js\" ./src ./test",
     "lint:fix-dry-run": "eslint --fix-dry-run --ext \".ts,.js\" ./src ./test",

@@ -1,13 +1,7 @@
 import { html as code } from 'common-tags'
 
-import { IExerciseStep } from 'exercise/stepByStep/@types'
-import { toExerciseSteps } from 'exercise/stepByStep/exerciseSteps'
-
-export interface IExerciseChapter {
-  title: string
-  objective: string
-  steps: IExerciseStep[]
-}
+import { IExerciseChapter } from 'exercise/@types'
+import { toExerciseSteps } from 'exercise/exerciseSteps'
 
 export function toExerciseChapter(
   intro: string,
@@ -36,15 +30,15 @@ export function toExerciseChapter(
     `)
   }
 
-  const stepByStepCodeItems = toExerciseSteps(diff)
+  const stepByStepItems = toExerciseSteps(diff)
 
-  if (stepByStepCodeItems instanceof Error) {
-    return stepByStepCodeItems
+  if (stepByStepItems instanceof Error) {
+    return stepByStepItems
   }
 
   return {
     title: title.trim(),
     objective: objective.trim(),
-    steps: stepByStepCodeItems
+    steps: stepByStepItems
   }
 }

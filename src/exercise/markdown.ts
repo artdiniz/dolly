@@ -1,34 +1,26 @@
 import { html as code } from 'common-tags'
+import { IExerciseChapter, IExerciseStepsItem } from 'exercise/@types'
 
-import { IExerciseStep } from 'exercise/stepByStep/@types/IExerciseStep'
-import { IExerciseChapter } from 'exercise/chapter'
-export function toCodeStepMarkdown(item: IExerciseStep, itemNumber: number): string {
-  if (item.type === 'added' || item.type === 'deleted' || item.type === 'modified') {
+export function toCodeStepMarkdown(item: IExerciseStepsItem): string {
+  if ('codeChanges' in item) {
     return code`
-      ${itemNumber}. TODO Enunciado ADM
-  
-        ####### ${item.filePath}
-  
-        \`\`\`${item.codeLanguage}
-        ${code(item.code).trim()}
-        \`\`\`
-    `
-  } else if (item.type === 'renamedAndModified') {
-    return code`
-      ${itemNumber}. TODO Enunciado Rename and modified
-  
-        ####### ${item.newFilePath}
-  
-        \`\`\`${item.codeLanguage}
-        ${code(item.code).trim()}
-        \`\`\`
+      ${item.position}. ${item.statement}
+
+      ${item.codeChanges
+        .map(
+          change => code`
+            ####### ${change.filePath}
+      
+            \`\`\`${change.codeLanguage}
+            ${code(change.code).trim()}
+            \`\`\`          
+          `
+        )
+        .join('\n\n')}
     `
   } else {
     return code`
-      ${itemNumber}. TODO Enunciado Rename only
-  
-        ####### ${item.oldFilePath}
-        ####### ${item.newFilePath}
+      ${item.position}. ${item.statement}
     `
   }
 }
@@ -45,7 +37,7 @@ export function toChapterMarkdown(exerciseChapter: IExerciseChapter): string {
     `
 
   const exerciseItemsMarkdown = exerciseChapter.steps
-    .map((item, itemNumber) => toCodeStepMarkdown(item, itemNumber + 1))
+    .map(item => toCodeStepMarkdown(item))
     .join('\n\n')
 
   return introMarkdown.trim() + '\n\n' + exerciseItemsMarkdown.trim()

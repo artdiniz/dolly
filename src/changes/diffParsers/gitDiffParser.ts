@@ -3,8 +3,8 @@ import path from 'path'
 import { parse as parseDiff } from 'what-the-diff'
 import { html as code } from 'common-tags'
 
-import { IRawDiffItem, IDiffParser } from 'exercise/stepByStep/diffParsers/@types'
-import { IExerciseStep } from 'exercise/stepByStep/@types'
+import { IRawDiffItem, IDiffParser } from 'changes/diffParsers/@types'
+import { IChange } from 'changes/@types'
 
 function toFilePath(gitDiffFilePath: string) {
   return gitDiffFilePath.replace(/^[ab]\//, '')
@@ -22,7 +22,7 @@ function shouldParse(diffType: string) {
   return diffType === 'git'
 }
 
-function parseGitDiff({ header, body }: IRawDiffItem): IExerciseStep[] | Error {
+function parseGitDiff({ header, body }: IRawDiffItem): IChange[] | Error {
   let diffs
   try {
     diffs = parseDiff(header + body)
@@ -40,37 +40,37 @@ function parseGitDiff({ header, body }: IRawDiffItem): IExerciseStep[] | Error {
 
   const gitDiff = diffs[0]
 
-  const steps: IExerciseStep[] = []
+  const changes: IChange[] = []
 
   if (gitDiff.status === 'deleted') {
-    steps.push({
+    changes.push({
       type: 'deleted',
       filePath: toFilePath(gitDiff.oldPath),
       codeLanguage: toLanguageIdentifier(gitDiff.oldPath),
       code: toCode(gitDiff.hunks)
     })
   } else if (gitDiff.status === 'added') {
-    steps.push({
+    changes.push({
       type: 'added',
       filePath: toFilePath(gitDiff.newPath),
       codeLanguage: toLanguageIdentifier(gitDiff.newPath),
       code: toCode(gitDiff.hunks)
     })
   } else if (gitDiff.status === 'modified') {
-    steps.push({
+    changes.push({
       type: 'modified',
       filePath: toFilePath(gitDiff.oldPath),
       codeLanguage: toLanguageIdentifier(gitDiff.oldPath),
       code: toCode(gitDiff.hunks)
     })
   } else if (gitDiff.status === 'renamed' && gitDiff.hunks === undefined) {
-    steps.push({
+    changes.push({
       type: 'renamedOnly',
       oldFilePath: toFilePath(gitDiff.oldPath),
       newFilePath: toFilePath(gitDiff.newPath)
     })
   } else if (gitDiff.status === 'renamed' && Array.isArray(gitDiff.hunks)) {
-    steps.push({
+    changes.push({
       type: 'renamedAndModified',
       oldFilePath: toFilePath(gitDiff.oldPath),
       newFilePath: toFilePath(gitDiff.newPath),
@@ -79,7 +79,7 @@ function parseGitDiff({ header, body }: IRawDiffItem): IExerciseStep[] | Error {
     })
   }
 
-  return steps
+  return changes
 }
 
 export const gitDiffParser: IDiffParser = {

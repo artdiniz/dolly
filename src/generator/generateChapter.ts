@@ -1,6 +1,6 @@
 import { html as code } from 'common-tags'
 
-import { toExerciseChapter } from 'exercise/chapter'
+import { toExerciseChapter } from 'exercise/exerciseChapter'
 import { toChapterMarkdown } from 'exercise/markdown'
 
 export interface ISuccesfullResult {
