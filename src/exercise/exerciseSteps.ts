@@ -60,7 +60,7 @@ export function toExerciseSteps(chapterDiff: string): IExerciseStepsItem[] | Err
 
   const parsedChanges = changesPerStep.map((changes, stepNumber) => {
     const parser = parsers.find(_parser => _parser.shouldParse(changes))
-    return parser !== undefined ? parser.parse(changes, stepNumber) : changes
+    return parser !== undefined ? parser.parse(changes, stepNumber + 1) : changes
   })
 
   const parseError = parsedChanges.find(result => result instanceof Error) as
