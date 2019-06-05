@@ -1,3 +1,5 @@
+import treeify from 'treeify'
+
 import { html as code } from 'common-tags'
 
 import { IChange, IChangeAddedFile, IChangeDeletedFile } from 'changes/@types'
@@ -50,10 +52,15 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
   return {
     position: changePosition,
     statement: code`
-      Adicione ou remova os arquivos prontos do curso:
-
-        ${JSON.stringify(fileTree, null, 2)}
-    `
+      Adicione ou remova os arquivos prontos do curso
+    `,
+    codeChanges: [
+      {
+        code: treeify.asTree(fileTree, false, true),
+        codeLanguage: 'fs',
+        filePath: 'arquivos do projeto'
+      }
+    ]
   }
 }
 
