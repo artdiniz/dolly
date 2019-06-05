@@ -79,7 +79,8 @@ export function toExerciseSteps(chapterDiff: string): IExerciseStepsItem[] | Err
       ${changesWithNoParser.map(change =>
         JSON.stringify({
           type: change.type,
-          file: 'filePath' in change ? change.filePath : change.newFilePath
+          file: 'filePath' in change ? change.filePath : change.newFilePath,
+          hasCode: 'code' in change
         })
       )}
     `)
