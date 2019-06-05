@@ -19,11 +19,40 @@ function shouldParse(
 function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem {
   if (!shouldParse(changes)) throw Error('Programming error: Should not be parsing')
 
+  function toFileTreeObject(subtree, path: string) {
+    const splittedPath = path.split('/')
+
+    const currentTree = subtree[splittedPath[0]] || {}
+
+    if (splittedPath.length === 2) {
+      const lastItem = { [splittedPath[1]]: null }
+      subtree[splittedPath[0]] = {
+        ...currentTree,
+        ...lastItem
+      }
+      return subtree
+    }
+
+    if (splittedPath.length > 2) {
+      subtree[splittedPath[0]] = {
+        ...toFileTreeObject(currentTree, splittedPath.slice(1).join('/'))
+      }
+      return subtree
+    }
+  }
+
+  const fileTree = changes
+    .map(change => change.filePath)
+    .reduce(toFileTreeObject, {})
+
+  console.log(JSON.stringify(fileTree, null, 2))
+
   return {
     position: changePosition,
     statement: code`
       Adicione ou remova os arquivos prontos do curso:
-      ${changes.map(change => change.filePath)}
+
+        ${JSON.stringify(fileTree, null, 2)}
     `
   }
 }
