@@ -1,4 +1,5 @@
 export interface IExerciseItemCodeChange {
+  statement?: string
   filePath: string
   codeLanguage: string
   code: string

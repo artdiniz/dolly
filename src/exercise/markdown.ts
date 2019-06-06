@@ -7,17 +7,18 @@ export function toExerciseStepMarkdown(item: IExerciseStepsItem): string {
     return code`
       ${statement}
 
-      ${item.codeChanges
-        .map(
-          change => code`
-            ####### ${change.filePath}
-      
-              \`\`\`${change.codeLanguage}
-              ${code(change.code).trim()}
-              \`\`\`
-          `
-        )
-        .join('\n\n')}
+          ${item.codeChanges
+            .map(
+              change => code`
+                ${change.statement || ''}
+
+                ###### # ${change.filePath}
+                \`\`\`${change.codeLanguage}
+                ${change.code.trim()}
+                \`\`\`
+              `
+            )
+            .join('\n\n')}
     `
   } else {
     return statement
