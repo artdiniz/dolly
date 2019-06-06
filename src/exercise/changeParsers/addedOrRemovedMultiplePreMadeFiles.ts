@@ -43,24 +43,101 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
     }
   }
 
-  const fileTree = changes
+  const addedFiles = changes
+    .filter(change => change.type === 'added')
     .map(change => change.filePath)
-    .reduce(toFileTreeObject, {})
 
-  console.log(JSON.stringify(fileTree, null, 2))
+  const addedFileTree = addedFiles.reduce(toFileTreeObject, {})
+
+  const deletedFiles = changes
+    .filter(change => change.type === 'deleted')
+    .map(change => change.filePath)
+
+  const deletedFileTree = deletedFiles.reduce(toFileTreeObject, {})
+
+  const addedFoldersInRoot = Object.keys(addedFileTree)
+  const deletedFoldersInRoot = Object.keys(deletedFileTree)
+
+  const qtAddedFiles = addedFiles.length
+  const addedFilesWord =
+    qtAddedFiles === 1 ? 'arquivo a ser adicionado' : 'arquivos a serem adicionados'
+  const addedFoldersWord =
+    addedFoldersInRoot.length === 1 ? 'na pasta' : 'nas pastas'
+  const addedFoldersAsSentence = Array.from(addedFoldersInRoot)
+    .join(', ')
+    .replace(/, ([^,]+)$/, ' e $1')
+
+  const addedFilesStatement =
+    qtAddedFiles !== 0 &&
+    code`
+      ${qtAddedFiles} ${addedFilesWord} ${addedFoldersWord} ${addedFoldersAsSentence}s
+    `.trim()
+
+  const qtDeletedFiles = deletedFiles.length
+  const deletedFilesWord =
+    qtDeletedFiles === 1 ? 'arquivo a ser removido' : 'arquivos a serem removidos'
+  const deletedFoldersWord =
+    deletedFoldersInRoot.length === 1 ? 'da pasta' : 'das pastas'
+  const deletedFoldersAsSentence = Array.from(deletedFoldersInRoot)
+    .join(', ')
+    .replace(/, ([^,]+)$/, ' e $1')
+
+  const deletedFilesStatement =
+    qtDeletedFiles !== 0 &&
+    code`
+      ${qtDeletedFiles} ${deletedFilesWord} ${deletedFoldersWord} ${deletedFoldersAsSentence}
+    `.trim()
+
+  const preMadeWarningStatement =
+    qtAddedFiles + qtDeletedFiles === 1
+      ? 'Note que esse arquivo foi disponibilizado já pronto para você.'
+      : 'Note que esses arquivos foram disponibilizados já prontos para você.'
+
+  const mainStatement =
+    qtAddedFiles > 0 && qtDeletedFiles > 0
+      ? `Há ${addedFilesStatement} e ${deletedFilesStatement}.`
+      : qtAddedFiles > 0
+      ? `Há ${addedFilesStatement}.`
+      : `Há ${deletedFilesStatement}.`
+
+  const statement = mainStatement + ' ' + preMadeWarningStatement
+
+  const codeChanges = []
+
+  if (qtAddedFiles > 0) {
+    const addedCodeChangesStatement = `${
+      qtAddedFiles == 1
+        ? 'O arquivo deve ser adicionado'
+        : `Os ${qtAddedFiles} arquivos devem ser adicionados`
+    } na seguinte estrutura de pastas:`
+
+    codeChanges.push({
+      statement: addedCodeChangesStatement,
+      code: code(treeify.asTree(addedFileTree, false, true)),
+      codeLanguage: 'fs',
+      filePath: 'novos arquivos do projeto'
+    })
+  }
+
+  if (qtDeletedFiles > 0) {
+    const deletedCodeChangesStatement = `${
+      qtDeletedFiles === 1
+        ? 'O arquivo que deve ser removido se encontra'
+        : `Os ${qtDeletedFiles} arquivos que devem ser removidos se encontram`
+    } na seguinte estrutura de pastas:`
+
+    codeChanges.push({
+      statement: deletedCodeChangesStatement,
+      code: code(treeify.asTree(deletedFileTree, false, true)),
+      codeLanguage: 'fs',
+      filePath: 'arquivos removidos do projeto'
+    })
+  }
 
   return {
     position: changePosition,
-    statement: code`
-      Adicione ou remova os arquivos prontos do curso
-    `,
-    codeChanges: [
-      {
-        code: treeify.asTree(fileTree, false, true),
-        codeLanguage: 'fs',
-        filePath: 'arquivos do projeto'
-      }
-    ]
+    statement: statement,
+    codeChanges: codeChanges
   }
 }
 
