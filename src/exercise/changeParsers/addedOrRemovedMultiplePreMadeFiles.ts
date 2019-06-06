@@ -21,7 +21,8 @@ function shouldParse(
 function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem {
   if (!shouldParse(changes)) throw Error('Programming error: Should not be parsing')
 
-  function toFileTreeObject(subtree, path: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function toFileTreeObject(subtree: any, path: string) {
     const splittedPath = path.split('/')
 
     const currentTree = subtree[splittedPath[0]] || {}
