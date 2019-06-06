@@ -7,6 +7,7 @@ import { IExerciseStepsItem } from 'exercise/@types'
 import { IChangeToExerciseItemParser } from 'exercise/changeParsers/@types'
 
 import { toFolderName } from 'exercise/changeParsers/util/toFolderName'
+import { boldCode } from 'exercise/changeParsers/util/markdown/boldCode'
 
 function shouldParse(changes: IChange[]): changes is IChangeAddedFile[] {
   return (
@@ -25,12 +26,13 @@ function parse(
   const folder = path.dirname(change.filePath)
   const fileName = path.basename(change.filePath)
 
-  const displayFolderName = toFolderName(folder)
+  const displayFolderName = boldCode(toFolderName(folder))
+  const displayFileName = boldCode(fileName)
 
   return {
     position: changePosition,
     statement: code`
-      Adicione o arquivo ${fileName} na pasta ${displayFolderName}. Este arquivo é um arquivo que foi disponibilizado já pronto para você.
+      Adicione o arquivo ${displayFileName} na pasta ${displayFolderName}. Este arquivo é um arquivo que foi disponibilizado já pronto para você.
     `
   }
 }

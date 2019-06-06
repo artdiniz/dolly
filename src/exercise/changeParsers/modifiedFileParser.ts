@@ -7,6 +7,7 @@ import { IExerciseStepsItem } from 'exercise/@types'
 import { IChangeToExerciseItemParser } from 'exercise/changeParsers/@types'
 
 import { toFolderName } from 'exercise/changeParsers/util/toFolderName'
+import { boldCode } from 'exercise/changeParsers/util/markdown/boldCode'
 
 function shouldParse(changes: IChange[]): changes is IChangeModifiedFileWithCode[] {
   return (
@@ -22,12 +23,13 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
   const folder = path.dirname(change.filePath)
   const fileName = path.basename(change.filePath)
 
-  const displayFolderName = toFolderName(folder)
+  const displayFolderName = boldCode(toFolderName(folder))
+  const displayFileName = boldCode(fileName)
 
   return {
     position: changePosition,
     statement: code`
-      No arquivo ${fileName} na pasta ${displayFolderName} faça as seguintes alterações:
+      No arquivo ${displayFileName} na pasta ${displayFolderName} faça as seguintes alterações:
     `,
     codeChanges: [
       {

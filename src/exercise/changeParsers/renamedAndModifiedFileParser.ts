@@ -7,6 +7,7 @@ import { IExerciseStepsItem } from 'exercise/@types'
 import { IChangeToExerciseItemParser } from 'exercise/changeParsers/@types'
 
 import { toFolderName } from 'exercise/changeParsers/util/toFolderName'
+import { boldCode } from 'exercise/changeParsers/util/markdown/boldCode'
 
 function shouldParse(
   changes: IChange[]
@@ -30,19 +31,25 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
 
   const hasMovedAndRenamed = oldFolder !== newFolder && oldFileName !== newFileName
 
+  const displayOldFolder = boldCode(toFolderName(oldFolder))
+  const displayOldFileName = boldCode(oldFileName)
+
+  const displayNewFolder = boldCode(toFolderName(newFolder))
+  const displayNewFileName = boldCode(newFileName)
+
   let statement: string
 
   if (hasMovedOnly) {
     statement = code`
-      Mova o arquivo ${newFileName} para a pasta ${toFolderName(newFolder)}. No momento este arquivo está na pasta ${toFolderName(oldFolder)}.
+      Mova o arquivo ${displayNewFileName} para a pasta ${displayNewFolder}. No momento este arquivo está na pasta ${displayOldFolder}.
     `
   } else if (hasRenamedFileOnly) {
     statement = code`
-      Na pasta ${toFolderName(oldFolder)}, renomeie o arquivo ${oldFileName} para ${newFileName}
+      Na pasta ${displayOldFolder}, renomeie o arquivo ${displayOldFileName} para ${displayNewFileName}
     `
   } else if (hasMovedAndRenamed) {
     statement = code`
-      Mova o arquivo ${oldFileName} para a pasta ${toFolderName(newFolder)} e o renomeie para ${newFileName}. No momento o arquivo está na pasta ${toFolderName(oldFolder)}.
+      Mova o arquivo ${displayOldFileName} para a pasta ${displayNewFolder} e o renomeie para ${displayNewFileName}. No momento o arquivo está na pasta ${displayOldFolder}.
     `
   } else {
     throw new Error(`This shouldn't happen`)
