@@ -8,7 +8,7 @@ import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
 import { biggestStringIn } from 'utils/reducers/biggestString'
 import { createDir, readDir, readFile, writeFile } from 'utils/fs'
 
-import { bootstrapMetaFiles } from 'metaFiles/bootstrapMetaFiles'
+import { MetaFilesFolder } from 'metaFiles/bootstrapMetaFiles'
 import { generateChapter } from 'generator/generateChapter'
 
 process.on('unhandledRejection', (error: Error) => {
@@ -45,19 +45,20 @@ interface IArgDirectories {
 async function run(directories: IArgDirectories) {
   await createDir(directories.output)
 
-  const diffFilesId = (await readDir(directories.diff))
+  const chaptersIds = (await readDir(directories.diff))
     .filter(fileName => path.extname(fileName) === '.diff')
     .map(diffFileName => path.basename(diffFileName).replace(/\.diff$/, ''))
 
-  const metaFiles = bootstrapMetaFiles({
-    path: directories.meta,
-    chapterIds: diffFilesId
+  const metaFilesFolder = MetaFilesFolder({
+    path: directories.meta
   })
 
-  const metaFilesContentByChapterId = await metaFiles.readFilesContent()
+  const metaContentByChapterId = await metaFilesFolder.readMetasFromChapters(
+    chaptersIds
+  )
 
   const generateAndWriteChaptersPromise = Promise.all(
-    diffFilesId
+    chaptersIds
       .map(async chapterId => ({
         id: chapterId,
         metaContent: await metaContentByChapterId[chapterId],

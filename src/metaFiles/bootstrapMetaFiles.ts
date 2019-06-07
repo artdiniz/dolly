@@ -1,65 +1,63 @@
 import path from 'path'
+import _partition from 'lodash/partition'
 import { html as code } from 'common-tags'
 import { loremIpsum } from 'lorem-ipsum'
 
 import { createDir, readDir, readFile, writeFile } from 'utils/fs'
-import { partition } from 'utils/reducers/partition'
 
-export function bootstrapMetaFiles({
-  path: metaDirPath,
-  chapterIds
-}: {
-  path: string
-  chapterIds: string[]
-}) {
+async function readChaptersFrom(metaDirPath: string, chapterIds: string[]) {
+  const metaDirFiles = await readDir(metaDirPath)
+
+  const metaFilesId = metaDirFiles
+    .filter(fileName => path.extname(fileName) === '.md')
+    .map(metaFileName => path.basename(metaFileName).replace(/\.md$/, ''))
+
+  const [chaptersWithMetaFiles, chaptersMissingMetaFiles] = _partition(
+    chapterIds,
+    chapterId => metaFilesId.includes(chapterId)
+  )
+
+  const existentMetaContentByChapterId = chaptersWithMetaFiles
+    .map(metaFileId => {
+      const metaFilePath = path.join(metaDirPath, metaFileId + '.md')
+      return {
+        [metaFileId]: readFile(metaFilePath)
+      }
+    })
+    .reduce(Object.assign, {})
+
+  const missingMetaContentByChapterId = chaptersMissingMetaFiles
+    .map(metaFileId => {
+      const metaFilePath = path.join(metaDirPath, metaFileId + '.md')
+      const fillerText = loremIpsum({ units: 'words', count: 20 })
+      const fileContent = code`
+        Titulo do capítulo ${metaFileId}
+        ---
+        Objetivo do capítulo ${metaFileId} ${fillerText}
+      `
+      return {
+        [metaFileId]: writeFile(metaFilePath, fileContent).then(() => fileContent)
+      }
+    })
+    .reduce(Object.assign, {})
+
+  return {
+    ...existentMetaContentByChapterId,
+    ...missingMetaContentByChapterId
+  } as {
+    [chapterId: string]: Promise<string>
+  }
+}
+
+export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
   const createMetaDirPromise = createDir(metaDirPath)
 
-  async function getFilesContent() {
+  async function readMetasFromChapters(chapters: string[]) {
     await createMetaDirPromise
-
-    const metaDirFiles = await readDir(metaDirPath)
-    const metaFilesId = metaDirFiles
-      .filter(fileName => path.extname(fileName) === '.md')
-      .map(metaFileName => path.basename(metaFileName).replace(/\.md$/, ''))
-
-    const [chaptersWithMetaFiles, chaptersMissingMetaFiles] = chapterIds.reduce(
-      partition(chapterId => metaFilesId.includes(chapterId)),
-      [[], []]
-    )
-
-    const readyMetaFilesContentByChapterId = chaptersWithMetaFiles
-      .map(metaFileId => {
-        const metaFilePath = path.join(metaDirPath, metaFileId + '.md')
-        return {
-          [metaFileId]: readFile(metaFilePath)
-        }
-      })
-      .reduce(Object.assign, {})
-
-    const missingMetaFilesContentByChapterId = chaptersMissingMetaFiles
-      .map(metaFileId => {
-        const metaFilePath = path.join(metaDirPath, metaFileId + '.md')
-        const fillerText = loremIpsum({ units: 'words', count: 20 })
-        const fileContent = code`
-          Titulo do capítulo ${metaFileId}
-          ---
-          Objetivo do capítulo ${metaFileId} ${fillerText}
-        `
-        return {
-          [metaFileId]: writeFile(metaFilePath, fileContent).then(() => fileContent)
-        }
-      })
-      .reduce(Object.assign, {})
-
-    return {
-      ...readyMetaFilesContentByChapterId,
-      ...missingMetaFilesContentByChapterId
-    } as {
-      [chapterId: string]: Promise<string>
-    }
+    return readChaptersFrom(metaDirPath, chapters)
   }
 
   return {
-    readFilesContent: getFilesContent
+    readMetasFromChapters
   }
 }
