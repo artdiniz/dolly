@@ -5,7 +5,7 @@ import { loremIpsum } from 'lorem-ipsum'
 
 import { createDir, readDir, readFile, writeFile } from 'utils/fs'
 
-async function readChaptersFrom(metaDirPath: string, chapterIds: string[]) {
+async function readOrCreateChaptersFrom(metaDirPath: string, chapterIds: string[]) {
   const metaDirFiles = await readDir(metaDirPath)
 
   const metaFilesId = metaDirFiles
@@ -52,12 +52,12 @@ async function readChaptersFrom(metaDirPath: string, chapterIds: string[]) {
 export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
   const createMetaDirPromise = createDir(metaDirPath)
 
-  async function readMetasFromChapters(chapters: string[]) {
+  async function readOrCreateMetasFromChapters(chapters: string[]) {
     await createMetaDirPromise
-    return readChaptersFrom(metaDirPath, chapters)
+    return readOrCreateChaptersFrom(metaDirPath, chapters)
   }
 
   return {
-    readMetasFromChapters
+    readMetasFromChapters: readOrCreateMetasFromChapters
   }
 }

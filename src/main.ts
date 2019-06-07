@@ -45,7 +45,7 @@ interface IArgDirectories {
 async function run(directories: IArgDirectories) {
   await createDir(directories.output)
 
-  const chaptersIds = (await readDir(directories.diff))
+  const chapterFileNames = (await readDir(directories.diff))
     .filter(fileName => path.extname(fileName) === '.diff')
     .map(diffFileName => path.basename(diffFileName).replace(/\.diff$/, ''))
 
@@ -53,16 +53,18 @@ async function run(directories: IArgDirectories) {
     path: directories.meta
   })
 
-  const metaContentByChapterId = await metaFilesFolder.readMetasFromChapters(
-    chaptersIds
+  const metaContentByChapterName = await metaFilesFolder.getMetasFromChapters(
+    chapterFileNames
   )
 
   const generateAndWriteChaptersPromise = Promise.all(
-    chaptersIds
-      .map(async chapterId => ({
-        id: chapterId,
-        metaContent: await metaContentByChapterId[chapterId],
-        diffContent: await readFile(path.join(directories.diff, chapterId + '.diff'))
+    chapterFileNames
+      .map(async chapterFileName => ({
+        id: chapterFileName,
+        metaContent: await metaContentByChapterName[chapterFileName],
+        diffContent: await readFile(
+          path.join(directories.diff, chapterFileName + '.diff')
+        )
       }))
       .map(async chapterGenerationInputInfoPromise =>
         generateChapter(await chapterGenerationInputInfoPromise)
@@ -84,7 +86,7 @@ async function run(directories: IArgDirectories) {
     result => result.success
   )
 
-  const chapterIdPaddingLength = biggestStringIn(chaptersIds).length + 2
+  const chapterIdPaddingLength = biggestStringIn(chapterFileNames).length + 2
 
   const successMessages = successfulResults
     .map(result => ({
