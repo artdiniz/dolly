@@ -59,7 +59,7 @@ async function run(directories: IArgDirectories) {
     diffFilesId
       .map(async chapterId => ({
         id: chapterId,
-        introContent: await metaFilesContentByChapterId[chapterId],
+        metaContent: await metaContentByChapterId[chapterId],
         diffContent: await readFile(path.join(directories.diff, chapterId + '.diff'))
       }))
       .map(async chapterGenerationInputInfoPromise =>

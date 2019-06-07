@@ -19,14 +19,14 @@ export type IChapterGenerationResult = ISuccesfullResult | IFailedResult
 
 interface IChapterGenerationInputInfo {
   id: string
-  introContent: string
+  metaContent: string
   diffContent: string
 }
 
 export function generateChapter(
   chapterInfo: IChapterGenerationInputInfo
 ): IChapterGenerationResult {
-  const { introContent, diffContent, id: chapterId } = chapterInfo
+  const { metaContent: introContent, diffContent, id: chapterId } = chapterInfo
 
   const exerciseChapter = toExerciseChapter(introContent, diffContent)
 
