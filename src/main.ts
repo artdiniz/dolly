@@ -4,7 +4,7 @@ import { html as code, oneLineTrim, stripIndent } from 'common-tags'
 import chalk from 'chalk'
 
 import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
-import { biggest } from 'utils/reducers/biggest'
+import { biggestStringIn } from 'utils/reducers/biggestString'
 import { createDir, readDir, readFile, writeFile } from 'utils/fs'
 
 import { bootstrapMetaFiles } from 'metaFiles/bootstrapMetaFiles'
@@ -79,7 +79,7 @@ async function run(directories: IArgDirectories) {
   const successfulResults = writeResults.filter(result => result.success)
   const failedResults = writeResults.filter(result => !result.success)
 
-  const chapterIdPaddingLength = diffFilesId.reduce(biggest).length + 2
+  const chapterIdPaddingLength = biggestStringIn(chaptersIds).length + 2
 
   const successMessages = successfulResults
     .map(result => ({
