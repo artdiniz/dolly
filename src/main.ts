@@ -3,7 +3,7 @@ import path from 'path'
 import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
 import { createDir, readDir, readFile, writeFile, copyFile } from 'utils/fs'
 
-import { MetaFilesFolder } from 'metaFiles/bootstrapMetaFiles'
+import { MetaFilesFolder } from 'metaFiles/MetaFilesFolder'
 import { generateChapter } from 'generator/generateChapter'
 import { $ResultsView } from 'view/$ResultsView'
 
@@ -73,8 +73,16 @@ async function run(directories: IArgDirectories) {
       return { success, chapterId, chapterContent, outputFilePath }
     })
 
+  const metaAssetsCopyingPromises = (await metaFilesFolder.getAssetsPath()).map(
+    assetPath => {
+      const destFilePath = directories.output + '/' + path.basename(assetPath)
+      return copyFile(assetPath, destFilePath).then(() => assetPath)
+    }
+  )
+
   const $resultsView = $ResultsView({
-    chapterGenerationPromises: generateAndWriteChaptersPromises
+    chapterGenerationPromises: generateAndWriteChaptersPromises,
+    metaAssetsCopyingPromises
   })
 
   $resultsView.render()

@@ -49,6 +49,13 @@ async function readOrCreateChaptersFrom(metaDirPath: string, chapterIds: string[
   }
 }
 
+async function readAssetsPath(metaDirPath: string) {
+  const metaDirFiles = await readDir(metaDirPath)
+  return metaDirFiles
+    .filter(fileName => path.extname(fileName) !== '.md')
+    .map(fileName => path.join(metaDirPath, fileName))
+}
+
 export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
   const createMetaDirPromise = createDir(metaDirPath)
 
@@ -57,7 +64,13 @@ export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
     return await readOrCreateChaptersFrom(metaDirPath, chapters)
   }
 
+  async function getAssetsPath() {
+    await createMetaDirPromise
+    return await readAssetsPath(metaDirPath)
+  }
+
   return {
-    getMetasByChapterName
+    getMetasByChapterName,
+    getAssetsPath
   }
 }

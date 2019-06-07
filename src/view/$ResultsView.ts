@@ -81,13 +81,29 @@ function renderChapters(generatedChapters: IChapterGenerationResults[]) {
   }
 }
 
-interface IResultsViewArgs {
-  chapterGenerationPromises: Promise<IChapterGenerationResults>[]
+function renderAssets(assetsPaths: string[]) {
+  const assetsMessages = assetsPaths.map(
+    assetPath => code`
+      Copied assets: ${chalk.grey(assetPath)}
+    `
+  )
+
+  console.log(assetsMessages.join('\n'))
 }
 
-export function $ResultsView({ chapterGenerationPromises }: IResultsViewArgs) {
+interface IResultsViewArgs {
+  chapterGenerationPromises: Promise<IChapterGenerationResults>[]
+  metaAssetsCopyingPromises: Promise<string>[]
+}
+
+export function $ResultsView({
+  chapterGenerationPromises,
+  metaAssetsCopyingPromises
+}: IResultsViewArgs) {
   async function render() {
     const generatedChapters = await Promise.all(chapterGenerationPromises)
+    const copiedAssets = await Promise.all(metaAssetsCopyingPromises)
+    renderAssets(copiedAssets)
     renderChapters(generatedChapters)
   }
 
