@@ -2,6 +2,7 @@ import path from 'path'
 
 import { html as code, oneLineTrim, stripIndent } from 'common-tags'
 import chalk from 'chalk'
+import _partition from 'lodash/partition'
 
 import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
 import { biggestStringIn } from 'utils/reducers/biggestString'
@@ -76,8 +77,11 @@ async function run(directories: IArgDirectories) {
   )
 
   const writeResults = await generateAndWriteChaptersPromise
-  const successfulResults = writeResults.filter(result => result.success)
-  const failedResults = writeResults.filter(result => !result.success)
+
+  const [successfulResults, failedResults] = _partition(
+    writeResults,
+    result => result.success
+  )
 
   const chapterIdPaddingLength = biggestStringIn(chaptersIds).length + 2
 
