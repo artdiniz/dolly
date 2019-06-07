@@ -73,10 +73,12 @@ async function run(directories: IArgDirectories) {
       return { success, chapterId, chapterContent, outputFilePath }
     })
 
-  const metaAssetsCopyingPromises = (await metaFilesFolder.getAssetsPath()).map(
-    assetPath => {
-      const destFilePath = directories.output + '/' + path.basename(assetPath)
-      return copyFile(assetPath, destFilePath).then(() => assetPath)
+  const metaAssetsCopyingPromises = (await metaFilesFolder.getAssetsRelativePath()).map(
+    async assetPath => {
+      const srcFilePath = path.join(directories.meta, assetPath)
+      const destFilePath = path.join(directories.output, assetPath)
+      await createDir(path.dirname(destFilePath))
+      return copyFile(srcFilePath, destFilePath).then(() => assetPath)
     }
   )
 

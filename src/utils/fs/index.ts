@@ -1,5 +1,6 @@
 export * from './createDir'
 export * from './readDir'
+export * from './readDirDeep'
 export * from './readFile'
 export * from './copyFile'
 export * from './writeFile'

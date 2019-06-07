@@ -3,14 +3,20 @@ import _partition from 'lodash/partition'
 import { html as code } from 'common-tags'
 import { loremIpsum } from 'lorem-ipsum'
 
-import { createDir, readDir, readFile, writeFile } from 'utils/fs'
+import { createDir, readDir, readFile, writeFile, readDirDeep } from 'utils/fs'
+
+function getMetaFilesFrom(metaDirFiles: string[]) {
+  return metaDirFiles
+    .filter(fileName => path.dirname(fileName) === '.')
+    .filter(fileName => path.extname(fileName) === '.md')
+}
 
 async function readOrCreateChaptersFrom(metaDirPath: string, chapterIds: string[]) {
   const metaDirFiles = await readDir(metaDirPath)
 
-  const metaFilesId = metaDirFiles
-    .filter(fileName => path.extname(fileName) === '.md')
-    .map(metaFileName => path.basename(metaFileName).replace(/\.md$/, ''))
+  const metaFilesId = getMetaFilesFrom(metaDirFiles).map(metaFileName =>
+    path.basename(metaFileName).replace(/\.md$/, '')
+  )
 
   const [chaptersWithMetaFiles, chaptersMissingMetaFiles] = _partition(
     chapterIds,
@@ -50,10 +56,15 @@ async function readOrCreateChaptersFrom(metaDirPath: string, chapterIds: string[
 }
 
 async function readAssetsPath(metaDirPath: string) {
-  const metaDirFiles = await readDir(metaDirPath)
-  return metaDirFiles
-    .filter(fileName => path.extname(fileName) !== '.md')
-    .map(fileName => path.join(metaDirPath, fileName))
+  const metaDirDeepFiles = await readDirDeep(metaDirPath, {
+    absolute: false
+  })
+
+  const metaFiles = getMetaFilesFrom(metaDirDeepFiles)
+
+  const assetsFiles = metaDirDeepFiles.filter(file => !metaFiles.includes(file))
+
+  return assetsFiles
 }
 
 export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
@@ -64,13 +75,13 @@ export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
     return await readOrCreateChaptersFrom(metaDirPath, chapters)
   }
 
-  async function getAssetsPath() {
+  async function getAssetsRelativePath() {
     await createMetaDirPromise
     return await readAssetsPath(metaDirPath)
   }
 
   return {
     getMetasByChapterName,
-    getAssetsPath
+    getAssetsRelativePath
   }
 }

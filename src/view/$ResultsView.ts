@@ -82,13 +82,17 @@ function renderChapters(generatedChapters: IChapterGenerationResults[]) {
 }
 
 function renderAssets(assetsPaths: string[]) {
-  const assetsMessages = assetsPaths.map(
+  const paths = assetsPaths.map(
     assetPath => code`
-      Copied assets: ${chalk.grey(assetPath)}
+      • ${chalk.grey(assetPath)}
     `
   )
 
-  console.log(assetsMessages.join('\n'))
+  console.log(code`
+    Copied ${paths.length} asset from meta:
+    
+      ${paths}
+  `)
 }
 
 interface IResultsViewArgs {

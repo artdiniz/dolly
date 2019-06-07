@@ -72,6 +72,7 @@
     "lodash": "^4.17.11",
     "lorem-ipsum": "^2.0.3",
     "mkdirp": "^0.5.1",
+    "read-dir-deep": "^6.0.0",
     "source-map-support": "^0.5.9",
     "strip-indent": "^3.0.0",
     "treeify": "^1.1.0",
