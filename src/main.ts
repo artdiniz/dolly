@@ -10,8 +10,9 @@ import { createDir, readDir, readFile, writeFile } from 'utils/fs'
 import { bootstrapMetaFiles } from 'metaFiles/bootstrapMetaFiles'
 import { generateChapter } from 'generator/generateChapter'
 
-process.on('unhandledRejection', (error, rejectedPromise) => {
-  console.error('Unhandled Rejection at:', rejectedPromise, 'reason:', error)
+process.on('unhandledRejection', (error: Error) => {
+  console.error('Unhandled Rejection. Reason:')
+  console.error(error)
   process.exit(1)
 })
 
@@ -20,19 +21,20 @@ const diffFilesDirArg = cliArgs[0]
 const introFilesDirArg = cliArgs[1]
 const outputDirArg = cliArgs[2]
 
-if (diffFilesDirArg === null) {
-  throw new Error(`Provided diff files dir is empty`)
-} else if (introFilesDirArg === null) {
-  throw new Error(`Provided intro files dir is empty`)
-} else {
-  run({
-    diff: resolvePathFromCwd(diffFilesDirArg),
-    meta: resolvePathFromCwd(introFilesDirArg),
-    output: outputDirArg
-      ? resolvePathFromCwd(outputDirArg)
-      : path.resolve(resolvePathFromCwd(diffFilesDirArg), '../generated')
-  })
-}
+const diffDir = diffFilesDirArg
+  ? resolvePathFromCwd(diffFilesDirArg)
+  : resolvePathFromCwd('./dolly/diffs')
+
+run({
+  diff: diffDir,
+  meta: introFilesDirArg
+    ? resolvePathFromCwd(introFilesDirArg)
+    : path.resolve(diffDir, '../meta'),
+  output: outputDirArg
+    ? resolvePathFromCwd(outputDirArg)
+    : path.resolve(diffDir, '../generated')
+})
+
 interface IArgDirectories {
   diff: string
   meta: string
