@@ -1,15 +1,11 @@
 import path from 'path'
 
-import { html as code, oneLineTrim, stripIndent } from 'common-tags'
-import chalk from 'chalk'
-import _partition from 'lodash/partition'
-
 import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
-import { biggestStringIn } from 'utils/reducers/biggestString'
-import { createDir, readDir, readFile, writeFile } from 'utils/fs'
+import { createDir, readDir, readFile, writeFile, copyFile } from 'utils/fs'
 
 import { MetaFilesFolder } from 'metaFiles/bootstrapMetaFiles'
 import { generateChapter } from 'generator/generateChapter'
+import { $ResultsView } from 'view/$ResultsView'
 
 process.on('unhandledRejection', (error: Error) => {
   console.error('Unhandled Rejection. Reason:')
@@ -53,99 +49,33 @@ async function run(directories: IArgDirectories) {
     path: directories.meta
   })
 
-  const metaContentByChapterName = await metaFilesFolder.getMetasFromChapters(
+  const metaContentByChapterName = await metaFilesFolder.getMetasByChapterName(
     chapterFileNames
   )
 
-  const generateAndWriteChaptersPromise = Promise.all(
-    chapterFileNames
-      .map(async chapterFileName => ({
-        id: chapterFileName,
-        metaContent: await metaContentByChapterName[chapterFileName],
-        diffContent: await readFile(
-          path.join(directories.diff, chapterFileName + '.diff')
-        )
-      }))
-      .map(async chapterGenerationInputInfoPromise =>
-        generateChapter(await chapterGenerationInputInfoPromise)
+  const generateAndWriteChaptersPromises = chapterFileNames
+    .map(async chapterFileName => ({
+      id: chapterFileName,
+      metaContent: await metaContentByChapterName[chapterFileName],
+      diffContent: await readFile(
+        path.join(directories.diff, chapterFileName + '.diff')
       )
-      .map(async chapterGenerationPromise => {
-        const { success, chapterId, chapterContent } = await chapterGenerationPromise
-
-        const outputFilePath = path.join(directories.output, chapterId + '.md')
-        await writeFile(outputFilePath, chapterContent.toString())
-
-        return { success, chapterId, chapterContent, outputFilePath }
-      })
-  )
-
-  const writeResults = await generateAndWriteChaptersPromise
-
-  const [successfulResults, failedResults] = _partition(
-    writeResults,
-    result => result.success
-  )
-
-  const chapterIdPaddingLength = biggestStringIn(chapterFileNames).length + 2
-
-  const successMessages = successfulResults
-    .map(result => ({
-      ...result,
-      chapterId: result.chapterId.padEnd(chapterIdPaddingLength, ' ')
     }))
-    .map(
-      result => oneLineTrim`
-        ${chalk.bold.green('Success')} ${result.chapterId} ${result.outputFilePath}
-      `
+    .map(async chapterGenerationInputInfoPromise =>
+      generateChapter(await chapterGenerationInputInfoPromise)
     )
+    .map(async chapterGenerationPromise => {
+      const { success, chapterId, chapterContent } = await chapterGenerationPromise
 
-  const failMessages = failedResults
-    .map(result => ({
-      ...result,
-      chapterId: result.chapterId.padEnd(chapterIdPaddingLength, ' ')
-    }))
-    .map(result =>
-      chalk.bold.red(oneLineTrim`
-        ${chalk.bgRed.white(' Error ')} ${result.chapterId} ${result.outputFilePath}
-      `)
-    )
+      const outputFilePath = path.join(directories.output, chapterId + '.md')
+      await writeFile(outputFilePath, chapterContent.toString())
 
-  const boxTextView = (text: string) => {
-    const boxLine = ''.padStart(8 + text.length, '*')
-    return stripIndent`
-      ${boxLine}
-      ==  ${text}  ==
-      ${boxLine}
-    `
-  }
+      return { success, chapterId, chapterContent, outputFilePath }
+    })
 
-  const errorBoxView = (text: string) => chalk.bold.red(boxTextView(text))
+  const $resultsView = $ResultsView({
+    chapterGenerationPromises: generateAndWriteChaptersPromises
+  })
 
-  const detailedErrors = failedResults
-    .map(
-      ({ chapterContent: error }, position) => code`
-        ${errorBoxView(`Error ${position + 1}`)}
-
-            ${chalk.red(error.toString())}
-      `
-    )
-    .join('\n\n===\n\n')
-
-  console.log('\n')
-
-  if (successMessages.length) {
-    console.log(code`
-      ${successMessages}
-    `)
-    console.log('\n')
-  }
-
-  if (failedResults.length) {
-    console.error(code`
-      ${failMessages}
-      
-      ${detailedErrors}
-    `)
-    console.log('\n')
-  }
+  $resultsView.render()
 }

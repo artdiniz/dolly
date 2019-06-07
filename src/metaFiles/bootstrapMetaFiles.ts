@@ -52,12 +52,12 @@ async function readOrCreateChaptersFrom(metaDirPath: string, chapterIds: string[
 export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
   const createMetaDirPromise = createDir(metaDirPath)
 
-  async function readOrCreateMetasFromChapters(chapters: string[]) {
+  async function getMetasByChapterName(chapters: string[]) {
     await createMetaDirPromise
-    return readOrCreateChaptersFrom(metaDirPath, chapters)
+    return await readOrCreateChaptersFrom(metaDirPath, chapters)
   }
 
   return {
-    readMetasFromChapters: readOrCreateMetasFromChapters
+    getMetasByChapterName
   }
 }
