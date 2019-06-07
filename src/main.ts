@@ -1,14 +1,14 @@
 import path from 'path'
 
 import { html as code, oneLineTrim, stripIndent } from 'common-tags'
+import chalk from 'chalk'
 
 import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
 import { biggest } from 'utils/reducers/biggest'
-
-import { generateChapter } from 'generator/generateChapter'
 import { createDir, readDir, readFile, writeFile } from 'utils/fs'
 
-import chalk from 'chalk'
+import { bootstrapMetaFiles } from 'metaFiles/bootstrapMetaFiles'
+import { generateChapter } from 'generator/generateChapter'
 
 process.on('unhandledRejection', (error, rejectedPromise) => {
   console.error('Unhandled Rejection at:', rejectedPromise, 'reason:', error)
@@ -27,33 +27,37 @@ if (diffFilesDirArg === null) {
 } else {
   run({
     diff: resolvePathFromCwd(diffFilesDirArg),
-    intro: resolvePathFromCwd(introFilesDirArg),
+    meta: resolvePathFromCwd(introFilesDirArg),
     output: outputDirArg
       ? resolvePathFromCwd(outputDirArg)
       : path.resolve(resolvePathFromCwd(diffFilesDirArg), '../generated')
   })
 }
-
 interface IArgDirectories {
   diff: string
-  intro: string
+  meta: string
   output: string
 }
 
 async function run(directories: IArgDirectories) {
   await createDir(directories.output)
 
-  const chapterIds = (await readDir(directories.diff))
+  const diffFilesId = (await readDir(directories.diff))
     .filter(fileName => path.extname(fileName) === '.diff')
     .map(diffFileName => path.basename(diffFileName).replace(/\.diff$/, ''))
 
+  const metaFiles = bootstrapMetaFiles({
+    path: directories.meta,
+    chapterIds: diffFilesId
+  })
+
+  const metaFilesContentByChapterId = await metaFiles.readFilesContent()
+
   const generateAndWriteChaptersPromise = Promise.all(
-    chapterIds
+    diffFilesId
       .map(async chapterId => ({
         id: chapterId,
-        introContent: await readFile(
-          path.join(directories.intro, chapterId + '.md')
-        ),
+        introContent: await metaFilesContentByChapterId[chapterId],
         diffContent: await readFile(path.join(directories.diff, chapterId + '.diff'))
       }))
       .map(async chapterGenerationInputInfoPromise =>
@@ -73,7 +77,7 @@ async function run(directories: IArgDirectories) {
   const successfulResults = writeResults.filter(result => result.success)
   const failedResults = writeResults.filter(result => !result.success)
 
-  const chapterIdPaddingLength = chapterIds.reduce(biggest).length + 2
+  const chapterIdPaddingLength = diffFilesId.reduce(biggest).length + 2
 
   const successMessages = successfulResults
     .map(result => ({
