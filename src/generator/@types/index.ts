@@ -1,1 +1,1 @@
-export * from './IChapterGenerationResults'
+export * from './IChapterFilesWriteResults'

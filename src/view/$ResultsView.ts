@@ -2,14 +2,19 @@ import { html as code, oneLineTrim, stripIndent } from 'common-tags'
 import chalk from 'chalk'
 import _partition from 'lodash/partition'
 
-import { IChapterGenerationResults } from 'generator/@types'
+import {
+  IChapterFilesWriteResults,
+  ISuccessfulWriteResult,
+  IFailedWriteResult
+} from 'generator/@types'
+
 import { biggestStringIn } from 'utils/reducers/biggestString'
 
-function renderChapters(generatedChapters: IChapterGenerationResults[]) {
+function renderChapters(generatedChapters: IChapterFilesWriteResults[]) {
   const [successfulResults, failedResults] = _partition(
     generatedChapters,
     result => result.success
-  )
+  ) as [ISuccessfulWriteResult[], IFailedWriteResult[]]
 
   const chapterFileNames = generatedChapters.map(info => info.chapterId)
 
@@ -23,7 +28,7 @@ function renderChapters(generatedChapters: IChapterGenerationResults[]) {
     .map(
       result => oneLineTrim`
             ${chalk.bold.green('Success')} ${result.chapterId} ${
-        result.outputFilePath
+        result.markdownFilePath
       }
           `
     )
@@ -36,7 +41,7 @@ function renderChapters(generatedChapters: IChapterGenerationResults[]) {
     .map(result =>
       chalk.bold.red(oneLineTrim`
             ${chalk.bgRed.white(' Error ')} ${result.chapterId} ${
-        result.outputFilePath
+        result.markdownFilePath
       }
           `)
     )
@@ -54,7 +59,7 @@ function renderChapters(generatedChapters: IChapterGenerationResults[]) {
 
   const detailedErrors = failedResults
     .map(
-      ({ chapterContent: error }, position) => code`
+      ({ error }, position) => code`
             ${errorBoxView(`Error ${position + 1}`)}
     
                 ${chalk.red(error.toString())}
@@ -96,7 +101,7 @@ function renderAssets(assetsPaths: string[]) {
 }
 
 interface IResultsViewArgs {
-  chapterGenerationPromises: Promise<IChapterGenerationResults>[]
+  chapterGenerationPromises: Promise<IChapterFilesWriteResults>[]
   metaAssetsCopyingPromises: Promise<string>[]
 }
 

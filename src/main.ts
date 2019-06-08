@@ -65,12 +65,37 @@ async function run(directories: IArgDirectories) {
       generateChapter(await chapterGenerationInputInfoPromise)
     )
     .map(async chapterGenerationPromise => {
-      const { success, chapterId, chapterContent } = await chapterGenerationPromise
+      const generationResult = await chapterGenerationPromise
 
-      const outputFilePath = path.join(directories.output, chapterId + '.md')
-      await writeFile(outputFilePath, chapterContent.toString())
+      const markdownFilePath = path.join(
+        directories.output,
+        generationResult.chapterId + '.md'
+      )
 
-      return { success, chapterId, chapterContent, outputFilePath }
+      const metaFilePath = path.join(
+        directories.meta,
+        generationResult.chapterId + '.md'
+      )
+
+      if (!generationResult.success) {
+        await writeFile(markdownFilePath, generationResult.error.toString())
+        return {
+          success: false,
+          chapterId: generationResult.chapterId,
+          error: generationResult.error,
+          markdownFilePath,
+          metaFilePath
+        }
+      }
+
+      const { success, chapterId, chapterContent, metaContent } = generationResult
+
+      const writeMarkdownPromise = writeFile(markdownFilePath, chapterContent)
+      const writeMetaPromise = writeFile(metaFilePath, metaContent)
+
+      await Promise.all([writeMarkdownPromise, writeMetaPromise])
+
+      return { success, chapterId, markdownFilePath, metaFilePath }
     })
 
   const metaAssetsCopyingPromises = (await metaFilesFolder.getAssetsRelativePath()).map(

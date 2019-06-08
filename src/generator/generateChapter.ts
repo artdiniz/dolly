@@ -2,16 +2,16 @@ import { html as code } from 'common-tags'
 
 import { toExerciseChapter } from 'exercise/exerciseChapter'
 import { toChapterMarkdown } from 'exercise/markdown'
-
-export interface ISuccesfullResult {
+interface ISuccesfullResult {
   success: true
-  chapterContent: string
   chapterId: string
+  chapterContent: string
+  metaContent: string
 }
 
-export interface IFailedResult {
+interface IFailedResult {
   success: false
-  chapterContent: Error
+  error: Error
   chapterId: string
 }
 
@@ -26,9 +26,9 @@ interface IChapterGenerationInputInfo {
 export function generateChapter(
   chapterInfo: IChapterGenerationInputInfo
 ): IChapterGenerationResult {
-  const { metaContent: introContent, diffContent, id: chapterId } = chapterInfo
+  const { metaContent, diffContent, id: chapterId } = chapterInfo
 
-  const exerciseChapter = toExerciseChapter(introContent, diffContent)
+  const exerciseChapter = toExerciseChapter(metaContent, diffContent)
 
   if (exerciseChapter instanceof Error) {
     const error = exerciseChapter
@@ -37,10 +37,20 @@ export function generateChapter(
 
         ${error.message}
     `
-    return { success: false, chapterContent: error, chapterId }
+
+    return {
+      success: false,
+      error,
+      chapterId: chapterInfo.id
+    }
   }
 
   const markdownContent = toChapterMarkdown(exerciseChapter)
 
-  return { success: true, chapterContent: markdownContent, chapterId }
+  return {
+    success: true,
+    chapterContent: markdownContent,
+    metaContent: '',
+    chapterId: chapterInfo.id
+  }
 }
