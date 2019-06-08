@@ -3,10 +3,14 @@ import { html as code } from 'common-tags'
 import { IExerciseChapter, IExerciseStepsItem } from 'exercise/@types'
 import { hashExerciseStep } from 'exercise/hashExerciseStep'
 
+export interface IMetaStepsItem extends IExerciseStepsItem {
+  hash: string
+}
+
 interface IMetaMarkdown {
   title: string
   objective: string
-  steps: IExerciseStepsItem[]
+  steps: IMetaStepsItem[]
 }
 
 export function readMetaMarkdown(metaContent: string): IMetaMarkdown | Error {
