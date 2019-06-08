@@ -20,6 +20,7 @@
     "test": "npm run test:static && npm run build && npm run _mocha:compiled -- \"test/**/*.test.{js,ts}\"",
     "watch:build": "chokidar --initial './src/**' 'package.json' -c 'npm run build'",
     "watch:test": "npm run _mocha:src -- --inspect --reporter min --watch --watch-extensions js,ts,tsx \"test/**/*.test.{js,ts}\"",
+    "watch:test:static": "chokidar --initial './src/**' 'package.json' -c 'npm run test:static'",
     "prepare": "npm run build"
   },
   "devDependencies": {
