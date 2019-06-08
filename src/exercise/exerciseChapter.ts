@@ -4,16 +4,16 @@ import { IExerciseChapter } from 'exercise/@types'
 import { toExerciseSteps } from 'exercise/exerciseSteps'
 
 export function toExerciseChapter(
-  intro: string,
+  meta: string,
   diff: string
 ): IExerciseChapter | Error {
-  const [title, objective] = intro.split(/^----*$/gm)
+  const [title, objective] = meta.split(/^----*$/gm)
 
   if (!title || !objective) {
     return Error(code`
       Invalid intro:
       \`\`\`
-      ${intro}
+      ${meta}
       \`\`\`
       
       Intro must be in the format:
