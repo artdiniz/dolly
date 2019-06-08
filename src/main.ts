@@ -15,7 +15,7 @@ process.on('unhandledRejection', (error: Error) => {
 
 const cliArgs = process.argv.slice(2)
 const diffFilesDirArg = cliArgs[0]
-const introFilesDirArg = cliArgs[1]
+const metaFilesDirArg = cliArgs[1]
 const outputDirArg = cliArgs[2]
 
 const diffDir = diffFilesDirArg
@@ -24,8 +24,8 @@ const diffDir = diffFilesDirArg
 
 run({
   diff: diffDir,
-  meta: introFilesDirArg
-    ? resolvePathFromCwd(introFilesDirArg)
+  meta: metaFilesDirArg
+    ? resolvePathFromCwd(metaFilesDirArg)
     : path.resolve(diffDir, '../meta'),
   output: outputDirArg
     ? resolvePathFromCwd(outputDirArg)
