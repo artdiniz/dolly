@@ -16,3 +16,13 @@ export interface IExerciseStepsItem {
   statement: string
   changes: IExerciseItemChange[]
 }
+
+export interface IMetaStepsItem extends IExerciseStepsItem {
+  hash: string
+}
+
+export interface IHydratedExerciseStepsItem extends IExerciseStepsItem {
+  isDead: boolean
+}
+
+export type IUnhydratedExerciseStepsItems = IExerciseStepsItem | IMetaStepsItem

@@ -1,17 +1,31 @@
-import { IExerciseChapter, IExerciseStepsItem } from 'exercise/@types'
+import {
+  IExerciseChapter,
+  IExerciseStepsItem,
+  IHydratedExerciseStepsItem,
+  IUnhydratedExerciseStepsItems,
+  IMetaStepsItem
+} from 'exercise/@types'
+
 import { toExerciseSteps } from 'exercise/exerciseSteps'
-import { readMetaMarkdown, IMetaStepsItem } from 'exercise/metaMarkdown'
+import { readMetaMarkdown } from 'exercise/metaMarkdown'
 import { hashExerciseStep } from 'exercise/hashExerciseStep'
 
 function isStepEquals(a: IMetaStepsItem, b: IExerciseStepsItem) {
   return a.hash === hashExerciseStep(b)
 }
 
+function hydrateDiffStep(
+  step: IUnhydratedExerciseStepsItems
+): IHydratedExerciseStepsItem {
+  return Object.assign({}, step, { isDead: false })
+}
+
 function hydrateMetaStepWithDiffChanges(
   metaStep: IMetaStepsItem,
   diffStep?: IExerciseStepsItem
-): IExerciseStepsItem {
+): IHydratedExerciseStepsItem {
   return {
+    isDead: diffStep === undefined ? true : false,
     statement: metaStep.statement,
     position: metaStep.position,
     changes: diffStep === undefined ? [] : diffStep.changes
@@ -38,10 +52,12 @@ export function toExerciseChapter(
     return hydrateMetaStepWithDiffChanges(metaStep, equalDiffStep)
   })
 
-  const diffOnlySteps = diffStepByStepItems.filter(
-    diffStep =>
-      !metaStepByStepItems.find(metaStep => isStepEquals(metaStep, diffStep))
-  )
+  const diffOnlySteps = diffStepByStepItems
+    .filter(
+      diffStep =>
+        !metaStepByStepItems.find(metaStep => isStepEquals(metaStep, diffStep))
+    )
+    .map(hydrateDiffStep)
 
   const steps = [...hydratedMetaSteps, ...diffOnlySteps]
 

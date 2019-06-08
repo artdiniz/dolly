@@ -3,7 +3,8 @@ import {
   IExerciseChapter,
   IExerciseStepsItem,
   IExerciseItemCodeChange,
-  IExerciseItemChange
+  IExerciseItemChange,
+  IHydratedExerciseStepsItem
 } from 'exercise/@types'
 
 function isCodeChange(
@@ -12,8 +13,9 @@ function isCodeChange(
   return 'code' in change
 }
 
-export function toExerciseStepMarkdown(item: IExerciseStepsItem): string {
-  const statement = `${item.position}. ${item.statement}`
+export function toExerciseStepMarkdown(item: IHydratedExerciseStepsItem): string {
+  const stepDeadStatus = item.isDead ? '[Faleceu]' : ''
+  const statement = `${item.position}. ${stepDeadStatus}${item.statement}`
 
   const codeChangesMarkdown = item.changes.filter(isCodeChange).map(change => {
     return code`
