@@ -33,7 +33,13 @@ function parse(
     position: changePosition,
     statement: code`
       Adicione o arquivo ${displayFileName} na pasta ${displayFolderName}. Este arquivo é um arquivo que foi disponibilizado já pronto para você.
-    `
+    `,
+    changes: [
+      {
+        filePath: change.filePath,
+        type: 'addedPreMade'
+      }
+    ]
   }
 }
 

@@ -1,24 +1,36 @@
 import { html as code } from 'common-tags'
-import { IExerciseChapter, IExerciseStepsItem } from 'exercise/@types'
+import {
+  IExerciseChapter,
+  IExerciseStepsItem,
+  IExerciseItemCodeChange,
+  IExerciseItemChange
+} from 'exercise/@types'
+
+function isCodeChange(
+  change: IExerciseItemChange
+): change is IExerciseItemCodeChange {
+  return 'code' in change
+}
 
 export function toExerciseStepMarkdown(item: IExerciseStepsItem): string {
   const statement = `${item.position}. ${item.statement}`
-  if ('codeChanges' in item) {
+
+  const codeChangesMarkdown = item.changes.filter(isCodeChange).map(change => {
+    return code`
+      ${change.statement || ''}
+
+      ###### # ${change.filePath}
+      \`\`\`${change.codeLanguage}
+      ${change.code.trim()}
+      \`\`\`
+    `
+  })
+
+  if (codeChangesMarkdown.length > 0) {
     return code`
       ${statement}
-
-          ${item.codeChanges
-            .map(
-              change => code`
-                ${change.statement || ''}
-
-                ###### # ${change.filePath}
-                \`\`\`${change.codeLanguage}
-                ${change.code.trim()}
-                \`\`\`
-              `
-            )
-            .join('\n\n')}
+      
+          ${codeChangesMarkdown.join('\n\n')}
     `
   } else {
     return statement

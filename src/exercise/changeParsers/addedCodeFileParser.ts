@@ -29,11 +29,12 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
     statement: code`
       Crie o arquivo ${displayFileName} na pasta ${displayFolderName} com o seguinte código:
     `,
-    codeChanges: [
+    changes: [
       {
         code: change.code,
         codeLanguage: change.codeLanguage,
-        filePath: change.filePath
+        filePath: change.filePath,
+        type: 'added'
       }
     ]
   }

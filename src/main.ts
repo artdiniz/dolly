@@ -80,7 +80,7 @@ async function run(directories: IArgDirectories) {
       if (!generationResult.success) {
         await writeFile(markdownFilePath, generationResult.error.toString())
         return {
-          success: false,
+          success: generationResult.success,
           chapterId: generationResult.chapterId,
           error: generationResult.error,
           markdownFilePath,

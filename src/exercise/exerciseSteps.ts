@@ -1,4 +1,7 @@
 import { html as code } from 'common-tags'
+import _isError from 'lodash/isError'
+import _not from 'lodash/negate'
+import _partition from 'lodash/partition'
 
 import { IChange } from 'changes/@types'
 import { IExerciseStepsItem } from 'exercise/@types'
@@ -52,6 +55,16 @@ function convertDiffToChangesPerStep(chapterDiff: string): IChange[][] | Error {
   return changesPerStep
 }
 
+const isChangeList = function(
+  result: Error | IChange[] | IExerciseStepsItem
+): result is IChange[] {
+  return Array.isArray(result)
+}
+
+const isExerciseItems = (
+  item: Error | IChange[] | IExerciseStepsItem
+): item is IExerciseStepsItem => _not(_isError)(item) && _not(isChangeList)(item)
+
 export function toExerciseSteps(chapterDiff: string): IExerciseStepsItem[] | Error {
   const changesPerStep = convertDiffToChangesPerStep(chapterDiff)
   if (changesPerStep instanceof Error) return changesPerStep
@@ -63,28 +76,29 @@ export function toExerciseSteps(chapterDiff: string): IExerciseStepsItem[] | Err
     return parser !== undefined ? parser.parse(changes, stepNumber + 1) : changes
   })
 
-  const parseError = parsedChanges.find(result => result instanceof Error) as
-    | Error
-    | undefined
+  const [exerciseItems, fails] = _partition(parsedChanges, isExerciseItems)
 
-  const changesWithNoParser = parsedChanges.find(result => Array.isArray(result)) as
-    | IChange[]
-    | undefined
+  if (exerciseItems.length > 0) {
+    return exerciseItems
+  } else {
+    const parseError = fails.find(_isError)
+    if (parseError) return parseError
 
-  if (parseError !== undefined) return parseError
-  if (changesWithNoParser !== undefined) {
-    return new Error(code`
-      No parser found that can convert those diff changes to an exercise item:
+    const changesWithNoParser = fails.find(isChangeList)
+    if (changesWithNoParser) {
+      return new Error(code`
+        No parser found that can convert those diff changes to an exercise item:
+  
+        ${changesWithNoParser.map(change =>
+          JSON.stringify({
+            type: change.type,
+            file: 'filePath' in change ? change.filePath : change.newFilePath,
+            hasCode: 'code' in change
+          })
+        )}
+      `)
+    }
 
-      ${changesWithNoParser.map(change =>
-        JSON.stringify({
-          type: change.type,
-          file: 'filePath' in change ? change.filePath : change.newFilePath,
-          hasCode: 'code' in change
-        })
-      )}
-    `)
+    throw new Error("This shouldn't hapen")
   }
-
-  return parsedChanges as IExerciseStepsItem[]
 }

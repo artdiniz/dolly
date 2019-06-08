@@ -1,9 +1,9 @@
 import path from 'path'
 import _partition from 'lodash/partition'
-import { html as code } from 'common-tags'
 import { loremIpsum } from 'lorem-ipsum'
 
-import { createDir, readDir, readFile, writeFile, readDirDeep } from 'utils/fs'
+import { createDir, readDir, readFile, readDirDeep } from 'utils/fs'
+import { toChapterMetaMarkdown } from 'exercise/metaMarkdown'
 
 function getMetaFilesFrom(metaDirFiles: string[]) {
   return metaDirFiles
@@ -24,25 +24,25 @@ async function readOrCreateChaptersFrom(metaDirPath: string, chapterIds: string[
   )
 
   const existentMetaContentByChapterId = chaptersWithMetaFiles
-    .map(metaFileId => {
-      const metaFilePath = path.join(metaDirPath, metaFileId + '.md')
+    .map(chapterFileName => {
+      const metaFilePath = path.join(metaDirPath, chapterFileName + '.md')
       return {
-        [metaFileId]: readFile(metaFilePath)
+        [chapterFileName]: readFile(metaFilePath)
       }
     })
     .reduce(Object.assign, {})
 
   const missingMetaContentByChapterId = chaptersMissingMetaFiles
-    .map(metaFileId => {
-      const metaFilePath = path.join(metaDirPath, metaFileId + '.md')
+    .map(chapterFileName => {
       const fillerText = loremIpsum({ units: 'words', count: 20 })
-      const fileContent = code`
-        Titulo do capítulo ${metaFileId}
-        ---
-        Objetivo do capítulo ${metaFileId} ${fillerText}
-      `
+      const fileContent = toChapterMetaMarkdown({
+        title: `Titulo do capítulo ${chapterFileName}`,
+        objective: `Objetivo do capítulo ${chapterFileName} ${fillerText}`,
+        steps: []
+      })
+
       return {
-        [metaFileId]: writeFile(metaFilePath, fileContent).then(() => fileContent)
+        [chapterFileName]: Promise.resolve(fileContent)
       }
     })
     .reduce(Object.assign, {})

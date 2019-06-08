@@ -116,7 +116,8 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
       statement: addedCodeChangesStatement,
       code: code(treeify.asTree(addedFileTree, false, true)),
       codeLanguage: 'fs',
-      filePath: 'novos arquivos do projeto'
+      filePath: 'novos arquivos do projeto',
+      type: 'addedMultiplePreMade'
     })
   }
 
@@ -131,14 +132,15 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
       statement: deletedCodeChangesStatement,
       code: code(treeify.asTree(deletedFileTree, false, true)),
       codeLanguage: 'fs',
-      filePath: 'arquivos removidos do projeto'
+      filePath: 'arquivos removidos do projeto',
+      type: 'deletedMultiplePreMade'
     })
   }
 
   return {
     position: changePosition,
     statement: statement,
-    codeChanges: codeChanges
+    changes: codeChanges
   }
 }
 

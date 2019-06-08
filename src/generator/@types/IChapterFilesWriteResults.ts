@@ -1,22 +1,17 @@
-interface IWithSuccess {
-  success: boolean
-}
-
 interface IWithChapterOutputInfo {
+  success: boolean
   chapterId: string
   markdownFilePath: string
   metaFilePath: string
 }
 
-export interface IFailedWriteResult extends IWithSuccess, IWithChapterOutputInfo {
+export interface IFailedWriteResult extends IWithChapterOutputInfo {
   success: false
   error: Error
 }
 
-export interface ISuccessfulWriteResult
-  extends IWithSuccess,
-    IWithChapterOutputInfo {
+export interface ISuccessfulWriteResult extends IWithChapterOutputInfo {
   success: true
 }
 
-export type IChapterFilesWriteResults = IFailedWriteResult | ISuccessfulWriteResult
+export type IChapterFilesWriteResult = IFailedWriteResult | ISuccessfulWriteResult

@@ -31,11 +31,12 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
     statement: code`
       No arquivo ${displayFileName} na pasta ${displayFolderName} faça as seguintes alterações:
     `,
-    codeChanges: [
+    changes: [
       {
+        filePath: change.filePath,
+        type: change.type,
         code: change.code,
-        codeLanguage: change.codeLanguage,
-        filePath: change.filePath
+        codeLanguage: change.codeLanguage
       }
     ]
   }

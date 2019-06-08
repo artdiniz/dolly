@@ -1,19 +1,18 @@
-export interface IExerciseItemCodeChange {
+export interface IExerciseItemFileChange {
+  type: string
   statement?: string
   filePath: string
+}
+
+export interface IExerciseItemCodeChange extends IExerciseItemFileChange {
   codeLanguage: string
   code: string
 }
 
-export interface IExerciseItemWithStatement {
+export type IExerciseItemChange = IExerciseItemFileChange | IExerciseItemCodeChange
+
+export interface IExerciseStepsItem {
   position?: number
   statement: string
+  changes: IExerciseItemChange[]
 }
-
-export interface IExerciseItemWithCodeChanges extends IExerciseItemWithStatement {
-  codeChanges: IExerciseItemCodeChange[]
-}
-
-export type IExerciseStepsItem =
-  | IExerciseItemWithStatement
-  | IExerciseItemWithCodeChanges

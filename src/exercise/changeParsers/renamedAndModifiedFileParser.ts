@@ -60,11 +60,12 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
   return {
     position: changePosition,
     statement: statement,
-    codeChanges: [
+    changes: [
       {
+        filePath: change.newFilePath,
+        type: change.type,
         code: change.code,
-        codeLanguage: change.codeLanguage,
-        filePath: change.newFilePath
+        codeLanguage: change.codeLanguage
       }
     ]
   }

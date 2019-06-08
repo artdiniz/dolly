@@ -55,7 +55,13 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
 
   return {
     position: changePosition,
-    statement: statement
+    statement: statement,
+    changes: [
+      {
+        filePath: change.newFilePath,
+        type: change.type
+      }
+    ]
   }
 }
 

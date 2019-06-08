@@ -3,14 +3,14 @@ import chalk from 'chalk'
 import _partition from 'lodash/partition'
 
 import {
-  IChapterFilesWriteResults,
+  IChapterFilesWriteResult,
   ISuccessfulWriteResult,
   IFailedWriteResult
 } from 'generator/@types'
 
 import { biggestStringIn } from 'utils/reducers/biggestString'
 
-function renderChapters(generatedChapters: IChapterFilesWriteResults[]) {
+function renderChapters(generatedChapters: IChapterFilesWriteResult[]) {
   const [successfulResults, failedResults] = _partition(
     generatedChapters,
     result => result.success
@@ -101,7 +101,7 @@ function renderAssets(assetsPaths: string[]) {
 }
 
 interface IResultsViewArgs {
-  chapterGenerationPromises: Promise<IChapterFilesWriteResults>[]
+  chapterGenerationPromises: Promise<IChapterFilesWriteResult>[]
   metaAssetsCopyingPromises: Promise<string>[]
 }
 

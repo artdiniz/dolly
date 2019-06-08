@@ -28,7 +28,13 @@ function parse(changes: IChange[], changePosition?: number): IExerciseStepsItem 
     position: changePosition,
     statement: code`
       Remova o arquivo ${displayFileName} na pasta ${displayFolderName}.
-    `
+    `,
+    changes: [
+      {
+        filePath: change.filePath,
+        type: change.type
+      }
+    ]
   }
 }
 

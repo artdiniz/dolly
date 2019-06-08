@@ -2,6 +2,8 @@ import { html as code } from 'common-tags'
 
 import { toExerciseChapter } from 'exercise/exerciseChapter'
 import { toChapterMarkdown } from 'exercise/markdown'
+import { toChapterMetaMarkdown } from 'exercise/metaMarkdown'
+
 interface ISuccesfullResult {
   success: true
   chapterId: string
@@ -26,9 +28,9 @@ interface IChapterGenerationInputInfo {
 export function generateChapter(
   chapterInfo: IChapterGenerationInputInfo
 ): IChapterGenerationResult {
-  const { metaContent, diffContent, id: chapterId } = chapterInfo
+  const { metaContent: initialMetaContent, diffContent, id: chapterId } = chapterInfo
 
-  const exerciseChapter = toExerciseChapter(metaContent, diffContent)
+  const exerciseChapter = toExerciseChapter(initialMetaContent, diffContent)
 
   if (exerciseChapter instanceof Error) {
     const error = exerciseChapter
@@ -46,11 +48,12 @@ export function generateChapter(
   }
 
   const markdownContent = toChapterMarkdown(exerciseChapter)
+  const metaContent = toChapterMetaMarkdown(exerciseChapter)
 
   return {
     success: true,
     chapterContent: markdownContent,
-    metaContent: '',
+    metaContent: metaContent,
     chapterId: chapterInfo.id
   }
 }
