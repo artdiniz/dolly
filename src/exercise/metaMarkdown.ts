@@ -1,10 +1,11 @@
 import { html as code } from 'common-tags'
 
 import { IExerciseChapter, IExerciseStepsItem } from 'exercise/@types'
+import { hashExerciseStep } from 'exercise/hashExerciseStep'
 
 function toStepsMetaMarkdown(steps: IExerciseStepsItem[]): string[] {
   return steps.map(step => {
-    const stepHash = '43g576d'
+    const stepHash = hashExerciseStep(step)
     const stepChangesMarkdown = step.changes.map(
       change => code`
       ####### ${change.type} - ${change.filePath}
