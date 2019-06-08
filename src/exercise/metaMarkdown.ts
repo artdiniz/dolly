@@ -3,6 +3,44 @@ import { html as code } from 'common-tags'
 import { IExerciseChapter, IExerciseStepsItem } from 'exercise/@types'
 import { hashExerciseStep } from 'exercise/hashExerciseStep'
 
+interface IMetaMarkdown {
+  title: string
+  objective: string
+  steps: IExerciseStepsItem[]
+}
+
+export function readMetaMarkdown(metaContent: string): IMetaMarkdown | Error {
+  const [title, objective, stringSteps] = metaContent.split(/^----*$/gm)
+  stringSteps
+
+  if (!title || !objective) {
+    return Error(code`
+      Invalid Meta Content:
+      \`\`\`
+      ${metaContent}
+      \`\`\`
+      
+      Meta Content must be in the format:
+      \`\`\`
+      Title dolore cillum occaecat non aliquip.
+      ---
+      Objective lorem laborum dolor officia eiusmod exercitation nostrud. 
+      Fugiat labore aliqua laborum voluptate sit velit ut. 
+      Id occaecat Lorem veniam culpa dolor sint enim consectetur nulla eu pariatur fugiat. 
+      Nostrud tempor velit mollit eu ut tempor qui adipisicing et non exercitation. 
+      Aute ea nisi non et veniam eiusmod. Ut ex aute duis non esse quis nisi. 
+      Commodo sit amet velit sit dolor sunt est aute irure quis enim adipisicing consectetur.
+      \`\`\`
+    `)
+  }
+
+  return {
+    title,
+    objective,
+    steps: []
+  }
+}
+
 function toStepsMetaMarkdown(steps: IExerciseStepsItem[]): string[] {
   return steps.map(step => {
     const stepHash = hashExerciseStep(step)
