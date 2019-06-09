@@ -1,7 +1,6 @@
 import { html as code } from 'common-tags'
 import {
   IExerciseChapter,
-  IExerciseStepsItem,
   IExerciseItemCodeChange,
   IExerciseItemChange,
   IHydratedExerciseStepsItem

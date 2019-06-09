@@ -1,11 +1,13 @@
 import path from 'path'
 
 import { resolvePathFromCwd } from 'utils/path/resolvePathFromCwd'
-import { createDir, readDir, readFile, writeFile, copyFile } from 'utils/fs'
+import { createDir, readDir, readFile, copyFiles } from 'utils/fs'
 
 import { MetaFilesFolder } from 'metaFiles/MetaFilesFolder'
-import { generateChapter } from 'generator/generateChapter'
 import { $ResultsView } from 'view/$ResultsView'
+
+import { generateChapter } from 'generator/generateChapter'
+import { writeGenerationResultToFileSystem } from 'generator/writeGenerationResultToFileSystem'
 
 process.on('unhandledRejection', (error: Error) => {
   console.error('Unhandled Rejection. Reason:')
@@ -32,7 +34,7 @@ run({
     : path.resolve(diffDir, '../generated')
 })
 
-interface IArgDirectories {
+export interface IArgDirectories {
   diff: string
   meta: string
   output: string
@@ -49,14 +51,20 @@ async function run(directories: IArgDirectories) {
     path: directories.meta
   })
 
-  const metaContentByChapterName = await metaFilesFolder.getMetasByChapterName(
+  const metaAssetsCopyingPromises = copyFiles({
+    files: await metaFilesFolder.getAssetsRelativePath(),
+    from: directories.meta,
+    to: directories.output
+  })
+
+  const metaInfoByChapterName = await metaFilesFolder.getMetaInfoByChapterName(
     chapterFileNames
   )
 
   const generateAndWriteChaptersPromises = chapterFileNames
     .map(async chapterFileName => ({
       id: chapterFileName,
-      metaContent: await metaContentByChapterName[chapterFileName],
+      metaContent: await metaInfoByChapterName[chapterFileName],
       diffContent: await readFile(
         path.join(directories.diff, chapterFileName + '.diff')
       )
@@ -64,48 +72,9 @@ async function run(directories: IArgDirectories) {
     .map(async chapterGenerationInputInfoPromise =>
       generateChapter(await chapterGenerationInputInfoPromise)
     )
-    .map(async chapterGenerationPromise => {
-      const generationResult = await chapterGenerationPromise
-
-      const markdownFilePath = path.join(
-        directories.output,
-        generationResult.chapterId + '.md'
-      )
-
-      const metaFilePath = path.join(
-        directories.meta,
-        generationResult.chapterId + '.md'
-      )
-
-      if (!generationResult.success) {
-        await writeFile(markdownFilePath, generationResult.error.toString())
-        return {
-          success: generationResult.success,
-          chapterId: generationResult.chapterId,
-          error: generationResult.error,
-          markdownFilePath,
-          metaFilePath
-        }
-      }
-
-      const { success, chapterId, chapterContent, metaContent } = generationResult
-
-      const writeMarkdownPromise = writeFile(markdownFilePath, chapterContent)
-      const writeMetaPromise = writeFile(metaFilePath, metaContent)
-
-      await Promise.all([writeMarkdownPromise, writeMetaPromise])
-
-      return { success, chapterId, markdownFilePath, metaFilePath }
-    })
-
-  const metaAssetsCopyingPromises = (await metaFilesFolder.getAssetsRelativePath()).map(
-    async assetPath => {
-      const srcFilePath = path.join(directories.meta, assetPath)
-      const destFilePath = path.join(directories.output, assetPath)
-      await createDir(path.dirname(destFilePath))
-      return copyFile(srcFilePath, destFilePath).then(() => assetPath)
-    }
-  )
+    .map(async chapterGenerationPromise =>
+      writeGenerationResultToFileSystem(await chapterGenerationPromise, directories)
+    )
 
   const $resultsView = $ResultsView({
     chapterGenerationPromises: generateAndWriteChaptersPromises,

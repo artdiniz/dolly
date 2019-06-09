@@ -70,7 +70,7 @@ async function readAssetsPath(metaDirPath: string) {
 export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
   const createMetaDirPromise = createDir(metaDirPath)
 
-  async function getMetasByChapterName(chapters: string[]) {
+  async function getMetaInfoByChapterName(chapters: string[]) {
     await createMetaDirPromise
     return await readOrCreateChaptersFrom(metaDirPath, chapters)
   }
@@ -81,7 +81,7 @@ export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
   }
 
   return {
-    getMetasByChapterName,
+    getMetaInfoByChapterName,
     getAssetsRelativePath
   }
 }
