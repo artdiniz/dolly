@@ -5,7 +5,8 @@ import {
   IExerciseItemChange,
   IHydratedMetaStepsItem,
   IDehydratedMetaStepsItem,
-  IMetaStepStatus
+  IMetaStepStatus,
+  IMetaStepsItem
 } from 'exercise/@types'
 
 interface IMetaMarkdown {
@@ -36,8 +37,8 @@ function InvalidMetaIntroContentError(metaContent: string) {
   `)
 }
 interface IMetaStepsItemHeader {
-  hash: string
-  status: string
+  hash: IMetaStepsItem['hash']
+  status: IMetaStepsItem['status']
 }
 
 const headerInfoSeparator = '|'
@@ -47,6 +48,9 @@ function toMdStepHeader(info: string) {
 }
 
 function toMdStepHeaderWith({ hash, status }: IMetaStepsItemHeader): string {
+  if (status === 'old') {
+    return toMdStepHeader(` ${hash} `)
+  }
   return toMdStepHeader(` ${hash} ${headerInfoSeparator} ${status} `)
 }
 
@@ -63,7 +67,7 @@ function toMdChangeItem(change: IExerciseItemChange): string {
 }
 
 function isValidStatus(status: string): status is IMetaStepStatus {
-  return status === 'not_approved' || status === 'ok' || status === 'dead'
+  return status === 'new' || status === 'old' || status === 'dead'
 }
 
 function parseMetaMarkdownSteps(
@@ -75,12 +79,12 @@ function parseMetaMarkdownSteps(
     const splittedSteps = stringSteps.split(splitStepsRegExp).slice(1)
     for (let i = 0; i < splittedSteps.length; i = i + 2) {
       const header = splittedSteps[i]
-      const [hash, status] = header
+      const [hash, status = 'old'] = header
         .split(headerInfoSeparator)
         .map(info => info.trim())
       const stepStatementAndChanges = splittedSteps[i + 1]
 
-      if (!isValidStatus(status))
+      if (status !== undefined && !isValidStatus(status))
         return Error(`Invalid exercise step status ${status} in meta file`)
 
       const splitStatementAndChangesRegExp = new RegExp(

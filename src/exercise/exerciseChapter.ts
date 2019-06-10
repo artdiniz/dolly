@@ -18,7 +18,7 @@ function areStepsTheSame(a: IMetaStepsItem, b: IExerciseStepsItem) {
 function hyDrateAsNewMetaStep(step: IExerciseStepsItem): IHydratedMetaStepsItem {
   return Object.assign({}, step, {
     isHydrated: true as true,
-    status: 'not_approved' as 'not_approved',
+    status: 'new' as 'new',
     hash: hashExerciseStep(step)
   })
 }
@@ -55,7 +55,7 @@ function mergeAndHydrateSteps(
 ): IHydratedMetaStepsItem {
   return {
     hash: hashExerciseStep(diffStep),
-    status: metaStep.status === 'ok' ? 'ok' : 'not_approved',
+    status: metaStep.status === 'old' ? 'old' : 'new',
     isHydrated: true,
     statement: metaStep.statement,
     position: metaStep.position,

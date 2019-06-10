@@ -19,7 +19,7 @@ export interface IExerciseStepsItem {
   changes: IExerciseItemChange[]
 }
 
-export type IMetaStepStatus = 'ok' | 'dead' | 'not_approved'
+export type IMetaStepStatus = 'new' | 'old' | 'dead'
 
 export interface IMetaStepsItem extends IExerciseStepsItem {
   hash: string
