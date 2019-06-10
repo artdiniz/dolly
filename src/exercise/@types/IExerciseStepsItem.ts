@@ -17,12 +17,18 @@ export interface IExerciseStepsItem {
   changes: IExerciseItemChange[]
 }
 
+export type IMetaStepStatus = 'ok' | 'dead' | 'not_approved'
+
 export interface IMetaStepsItem extends IExerciseStepsItem {
   hash: string
+  status: IMetaStepStatus
+  isHydrated: boolean
 }
 
-export interface IHydratedExerciseStepsItem extends IExerciseStepsItem {
-  isDead: boolean
+export interface IDehydratedMetaStepsItem extends IMetaStepsItem {
+  isHydrated: false
 }
 
-export type IUnhydratedExerciseStepsItems = IExerciseStepsItem | IMetaStepsItem
+export interface IHydratedMetaStepsItem extends IMetaStepsItem {
+  isHydrated: true
+}

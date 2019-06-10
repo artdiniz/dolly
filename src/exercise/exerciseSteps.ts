@@ -4,7 +4,7 @@ import _not from 'lodash/negate'
 import _partition from 'lodash/partition'
 
 import { IChange } from 'changes/@types'
-import { IExerciseStepsItem, IUnhydratedExerciseStepsItems } from 'exercise/@types'
+import { IExerciseStepsItem } from 'exercise/@types'
 
 import { gitDiffParser } from 'changes/diffParsers/gitDiffParser'
 import { fluxoDiffParser } from 'changes/diffParsers/fluxoDiffParser'
@@ -65,9 +65,7 @@ const isExerciseItems = (
   item: Error | IChange[] | IExerciseStepsItem
 ): item is IExerciseStepsItem => _not(_isError)(item) && _not(isChangeList)(item)
 
-export function toExerciseSteps(
-  chapterDiff: string
-): IUnhydratedExerciseStepsItems[] | Error {
+export function toExerciseSteps(chapterDiff: string): IExerciseStepsItem[] | Error {
   const changesPerStep = convertDiffToChangesPerStep(chapterDiff)
   if (changesPerStep instanceof Error) return changesPerStep
 

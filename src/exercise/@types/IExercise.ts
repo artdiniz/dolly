@@ -1,7 +1,7 @@
-import { IHydratedExerciseStepsItem } from '.'
+import { IHydratedMetaStepsItem } from '.'
 
 export interface IExerciseChapter {
   title: string
   objective: string
-  steps: IHydratedExerciseStepsItem[]
+  steps: IHydratedMetaStepsItem[]
 }

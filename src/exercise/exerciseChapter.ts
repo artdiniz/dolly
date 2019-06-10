@@ -1,34 +1,65 @@
 import {
   IExerciseChapter,
   IExerciseStepsItem,
-  IHydratedExerciseStepsItem,
-  IUnhydratedExerciseStepsItems,
-  IMetaStepsItem
+  IHydratedMetaStepsItem,
+  IMetaStepsItem,
+  IDehydratedMetaStepsItem,
+  IExerciseItemChange
 } from 'exercise/@types'
 
 import { toExerciseSteps } from 'exercise/exerciseSteps'
 import { readMetaMarkdown } from 'exercise/metaMarkdown'
 import { hashExerciseStep } from 'exercise/hashExerciseStep'
 
-function isStepEquals(a: IMetaStepsItem, b: IExerciseStepsItem) {
+function areStepsTheSame(a: IMetaStepsItem, b: IExerciseStepsItem) {
   return a.hash === hashExerciseStep(b)
 }
 
-function hydrateDiffStep(
-  step: IUnhydratedExerciseStepsItems
-): IHydratedExerciseStepsItem {
-  return Object.assign({}, step, { isDead: false })
+function hyDrateAsNewMetaStep(step: IExerciseStepsItem): IHydratedMetaStepsItem {
+  return Object.assign({}, step, {
+    isHydrated: true as true,
+    status: 'not_approved' as 'not_approved',
+    hash: hashExerciseStep(step)
+  })
 }
 
-function hydrateMetaStepWithDiffChanges(
+function hydrateAsDeadMetaStep(
+  step: IDehydratedMetaStepsItem
+): IHydratedMetaStepsItem {
+  return Object.assign({}, step, {
+    isHydrated: true as true,
+    status: 'dead' as 'dead',
+    hash: step.hash
+  })
+}
+
+function mergeChanges(
   metaStep: IMetaStepsItem,
-  diffStep?: IExerciseStepsItem
-): IHydratedExerciseStepsItem {
+  diffStep: IExerciseStepsItem
+): IExerciseItemChange[] {
+  const metaChanges = metaStep.changes
+  const diffChanges = diffStep.changes
+
+  return diffChanges.map((diffChange, change_position) => {
+    const metaStatement = metaChanges[change_position].statement
+    return {
+      ...diffChange,
+      statement: metaStatement !== undefined ? metaStatement : diffChange.statement
+    }
+  })
+}
+
+function mergeAndHydrateSteps(
+  metaStep: IDehydratedMetaStepsItem,
+  diffStep: IExerciseStepsItem
+): IHydratedMetaStepsItem {
   return {
-    isDead: diffStep === undefined ? true : false,
+    hash: hashExerciseStep(diffStep),
+    status: metaStep.status === 'ok' ? 'ok' : 'not_approved',
+    isHydrated: true,
     statement: metaStep.statement,
     position: metaStep.position,
-    changes: diffStep === undefined ? [] : diffStep.changes
+    changes: mergeChanges(metaStep, diffStep)
   }
 }
 
@@ -41,25 +72,28 @@ export function toExerciseChapter(
   const { title, objective, steps: metaStepByStepItems } = metaInfo
 
   const diffStepByStepItems = toExerciseSteps(diff)
-  if (diffStepByStepItems instanceof Error) {
-    return diffStepByStepItems
-  }
+  if (diffStepByStepItems instanceof Error) return diffStepByStepItems
 
-  const hydratedMetaSteps = metaStepByStepItems.map(metaStep => {
-    const equalDiffStep = diffStepByStepItems.find(diffStep =>
-      isStepEquals(metaStep, diffStep)
+  const mergedAndUnmergeableMetaSteps = metaStepByStepItems.map(metaStep => {
+    const relativeDiffStep = diffStepByStepItems.find(diffStep =>
+      areStepsTheSame(metaStep, diffStep)
     )
-    return hydrateMetaStepWithDiffChanges(metaStep, equalDiffStep)
+
+    if (relativeDiffStep === undefined) {
+      return hydrateAsDeadMetaStep(metaStep)
+    } else {
+      return mergeAndHydrateSteps(metaStep, relativeDiffStep)
+    }
   })
 
   const diffOnlySteps = diffStepByStepItems
     .filter(
       diffStep =>
-        !metaStepByStepItems.find(metaStep => isStepEquals(metaStep, diffStep))
+        !metaStepByStepItems.find(metaStep => areStepsTheSame(metaStep, diffStep))
     )
-    .map(hydrateDiffStep)
+    .map(hyDrateAsNewMetaStep)
 
-  const steps = [...hydratedMetaSteps, ...diffOnlySteps]
+  const steps = [...mergedAndUnmergeableMetaSteps, ...diffOnlySteps]
 
   return {
     title: title.trim(),
