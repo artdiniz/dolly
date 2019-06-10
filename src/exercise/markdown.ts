@@ -29,20 +29,31 @@ function strikeNonWhitespaceOnly(text: string): string {
 }
 
 export function toCodeChangeMarkdown(codeChange: ICodeLine[]): string {
+  let previousLine: ICodeLine
   return codeChange
     .map(line => {
       if (line.type === 'added') {
-        return `+${line.content}`
+        return (previousLine = line), `+${line.content}`
       }
 
       if (line.type === 'deleted') {
-        return `-${strikeNonWhitespaceOnly(line.content)}`
+        return (previousLine = line), `-${strikeNonWhitespaceOnly(line.content)}`
       }
 
       if (line.type === 'context') {
-        return ` ${line.content}`
+        if (
+          previousLine &&
+          previousLine.type === 'context' &&
+          previousLine.content.trim().length === 0 &&
+          line.content.trim().length === 0
+        ) {
+          return (previousLine = line), null
+        } else {
+          return (previousLine = line), ` ${line.content}`
+        }
       }
     })
+    .filter(line => line !== null)
     .join('\n')
 }
 
