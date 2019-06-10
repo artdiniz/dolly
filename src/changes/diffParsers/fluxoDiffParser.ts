@@ -1,7 +1,7 @@
 import { html as code } from 'common-tags'
 
 import { IRawDiffItem, IDiffParser } from 'changes/diffParsers/@types'
-import { IChange, IChangeFile } from 'changes/@types'
+import { IChange, IChangeAddedFile, IChangeDeletedFile } from 'changes/@types'
 
 function toStepType(diffType: 'A' | 'D'): 'added' | 'deleted' {
   if (diffType === 'A') return 'added'
@@ -53,7 +53,7 @@ function parseFluxoDiff({ header, body }: IRawDiffItem): IChange[] | Error {
       return {
         type: toStepType(modType),
         filePath: filePath
-      } as IChangeFile
+      } as IChangeAddedFile | IChangeDeletedFile
     })
 
     changes.push(...parsedSteps)

@@ -1,6 +1,11 @@
+export interface ICodeLine {
+  type: 'added' | 'deleted' | 'context'
+  content: string
+}
+
 export interface IChangeWithCode {
   codeLanguage: string
-  code: string
+  code: ICodeLine[]
 }
 
 export interface IChangeMaintainedFileName {

@@ -5,11 +5,45 @@ import {
   IExerciseItemChange,
   IHydratedMetaStepsItem
 } from 'exercise/@types'
+import { ICodeLine } from 'changes/@types'
 
 function isCodeChange(
   change: IExerciseItemChange
 ): change is IExerciseItemCodeChange {
   return 'code' in change
+}
+
+function strike(text: string, canStrike = (char: string) => true): string {
+  return text
+    .split('')
+    .map(char => (canStrike(char) ? char + '\u0336' : char))
+    .join('')
+}
+
+function strikeAll(text: string): string {
+  return strike(text)
+}
+
+function strikeNonWhitespaceOnly(text: string): string {
+  return strike(text, (char: string) => Boolean(char.match(/\S/)))
+}
+
+export function toCodeChangeMarkdown(codeChange: ICodeLine[]): string {
+  return codeChange
+    .map(line => {
+      if (line.type === 'added') {
+        return `+${line.content}`
+      }
+
+      if (line.type === 'deleted') {
+        return `-${strikeNonWhitespaceOnly(line.content)}`
+      }
+
+      if (line.type === 'context') {
+        return ` ${line.content}`
+      }
+    })
+    .join('\n')
 }
 
 export function toExerciseStepMarkdown(item: IHydratedMetaStepsItem): string {
@@ -21,7 +55,7 @@ export function toExerciseStepMarkdown(item: IHydratedMetaStepsItem): string {
 
       ###### # ${change.filePath}
       \`\`\`${change.codeLanguage}
-      ${change.code.trim()}
+      ${toCodeChangeMarkdown(change.code)}
       \`\`\`
     `
   })

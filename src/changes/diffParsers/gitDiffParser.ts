@@ -4,14 +4,43 @@ import { parse as parseDiff } from 'what-the-diff'
 import { html as code } from 'common-tags'
 
 import { IRawDiffItem, IDiffParser } from 'changes/diffParsers/@types'
-import { IChange } from 'changes/@types'
+import { IChange, ICodeLine } from 'changes/@types'
 
 function toFilePath(gitDiffFilePath: string) {
   return gitDiffFilePath.replace(/^[ab]\//, '')
 }
 
-function toCode(hunks: IDiffHunk[]): string {
-  return hunks.map(hunk => hunk.lines.join('\n')).join('\n')
+function toCodeLineType(typeSymbol: string): ICodeLine['type'] | Error {
+  if (typeSymbol === '+') return 'added'
+  if (typeSymbol === '-') return 'deleted'
+  if (typeSymbol === ' ') return 'context'
+  else return Error('Unknown code line starting with symbol: ' + typeSymbol)
+}
+
+function toCode(hunks: IDiffHunk[]): ICodeLine[] | Error {
+  const lines: ICodeLine[] = []
+
+  for (let hunk of hunks) {
+    for (let line of hunk.lines) {
+      const lineMatch = line.match(/^([\+\-\\ ]{1})([\s\S]*)$/)
+      if (lineMatch === null) {
+        return Error(code`
+          Unknown code line type in diff line:
+
+            \`${line}\`
+        `)
+      }
+      const [typeSymbol, content] = [lineMatch[1], lineMatch[2]]
+      if (typeSymbol.match(/\\/)) continue
+
+      const type = toCodeLineType(typeSymbol)
+      if (type instanceof Error) return type
+
+      lines.push({ type, content })
+    }
+  }
+
+  return lines
 }
 
 function toLanguageIdentifier(fileName: string): string {
@@ -42,26 +71,29 @@ function parseGitDiff({ header, body }: IRawDiffItem): IChange[] | Error {
 
   const changes: IChange[] = []
 
+  const changeCode = gitDiff.hunks && toCode(gitDiff.hunks)
+  if (changeCode instanceof Error) return changeCode
+
   if (gitDiff.status === 'deleted') {
     changes.push({
       type: 'deleted',
       filePath: toFilePath(gitDiff.oldPath),
       codeLanguage: toLanguageIdentifier(gitDiff.oldPath),
-      code: toCode(gitDiff.hunks)
+      code: changeCode
     })
   } else if (gitDiff.status === 'added') {
     changes.push({
       type: 'added',
       filePath: toFilePath(gitDiff.newPath),
       codeLanguage: toLanguageIdentifier(gitDiff.newPath),
-      code: toCode(gitDiff.hunks)
+      code: changeCode
     })
   } else if (gitDiff.status === 'modified') {
     changes.push({
       type: 'modified',
       filePath: toFilePath(gitDiff.oldPath),
       codeLanguage: toLanguageIdentifier(gitDiff.oldPath),
-      code: toCode(gitDiff.hunks)
+      code: changeCode
     })
   } else if (gitDiff.status === 'renamed' && gitDiff.hunks === undefined) {
     changes.push({
@@ -75,7 +107,7 @@ function parseGitDiff({ header, body }: IRawDiffItem): IChange[] | Error {
       oldFilePath: toFilePath(gitDiff.oldPath),
       newFilePath: toFilePath(gitDiff.newPath),
       codeLanguage: toLanguageIdentifier(gitDiff.newPath),
-      code: toCode(gitDiff.hunks)
+      code: changeCode
     })
   }
 

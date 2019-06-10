@@ -1,3 +1,5 @@
+import { ICodeLine } from 'changes/@types'
+
 export interface IExerciseItemFileChange {
   type: string
   statement?: string
@@ -6,7 +8,7 @@ export interface IExerciseItemFileChange {
 
 export interface IExerciseItemCodeChange extends IExerciseItemFileChange {
   codeLanguage: string
-  code: string
+  code: ICodeLine[]
 }
 
 export type IExerciseItemChange = IExerciseItemFileChange | IExerciseItemCodeChange
