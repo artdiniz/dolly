@@ -99,6 +99,16 @@ export function toExerciseSteps(chapterDiff: string): IExerciseStepsItem[] | Err
       `)
     }
 
-    throw new Error("This shouldn't hapen")
+    throw new Error(code`
+      Chapter diff is probably empty.
+      This shouldn't happen!. Can't parse changes to exercise steps.
+      
+      Provided diff content (between backticks - \`\`\`): 
+        \`\`\`
+        ${chapterDiff}
+        \`\`\`
+
+      No errors nor unparsed changes found in fails list: ${JSON.stringify(fails)}
+    `)
   }
 }
