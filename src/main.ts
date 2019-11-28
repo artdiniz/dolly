@@ -51,11 +51,15 @@ async function run(directories: IArgDirectories) {
     path: directories.meta
   })
 
-  const metaAssetsCopyingPromises = copyFiles({
-    files: await metaFilesFolder.getAssetsRelativePath(),
-    from: directories.meta,
-    to: directories.output
-  })
+  const metaAssetsCopyingPromise = metaFilesFolder
+    .getAssetsRelativePaths()
+    .then(assetsPaths =>
+      copyFiles({
+        files: assetsPaths,
+        from: directories.meta,
+        to: directories.output
+      })
+    )
 
   const metaInfoByChapterName = await metaFilesFolder.getMetaInfoByChapterName(
     chapterFileNames
@@ -78,7 +82,7 @@ async function run(directories: IArgDirectories) {
 
   const $resultsView = $ResultsView({
     chapterGenerationPromises: generateAndWriteChaptersPromises,
-    metaAssetsCopyingPromises
+    metaAssetsCopyingPromise
   })
 
   $resultsView.render()

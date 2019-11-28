@@ -55,7 +55,7 @@ async function readOrCreateChaptersFrom(metaDirPath: string, chapterIds: string[
   }
 }
 
-async function readAssetsPath(metaDirPath: string) {
+async function readAssetsPaths(metaDirPath: string) {
   const metaDirDeepFiles = await readDirDeep(metaDirPath, {
     absolute: false
   })
@@ -77,11 +77,11 @@ export function MetaFilesFolder({ path: metaDirPath }: { path: string }) {
 
   async function getAssetsRelativePath() {
     await createMetaDirPromise
-    return await readAssetsPath(metaDirPath)
+    return await readAssetsPaths(metaDirPath)
   }
 
   return {
     getMetaInfoByChapterName,
-    getAssetsRelativePath
+    getAssetsRelativePaths: getAssetsRelativePath
   }
 }

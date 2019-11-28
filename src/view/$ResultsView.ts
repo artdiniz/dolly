@@ -102,16 +102,16 @@ function renderAssets(assetsPaths: string[]) {
 
 interface IResultsViewArgs {
   chapterGenerationPromises: Promise<IChapterFilesWriteResult>[]
-  metaAssetsCopyingPromises: Promise<string>[]
+  metaAssetsCopyingPromise: Promise<Promise<string>[]>
 }
 
 export function $ResultsView({
   chapterGenerationPromises,
-  metaAssetsCopyingPromises
+  metaAssetsCopyingPromise: metaAssetsCopyingPromises
 }: IResultsViewArgs) {
   async function render() {
     const generatedChapters = await Promise.all(chapterGenerationPromises)
-    const copiedAssets = await Promise.all(metaAssetsCopyingPromises)
+    const copiedAssets = await Promise.all(await metaAssetsCopyingPromises)
     renderAssets(copiedAssets)
     renderChapters(generatedChapters)
   }
