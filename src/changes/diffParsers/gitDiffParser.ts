@@ -95,13 +95,22 @@ function parseGitDiff({ header, body }: IRawDiffItem): IChange[] | Error {
       codeLanguage: toLanguageIdentifier(gitDiff.oldPath),
       code: changeCode
     })
-  } else if (gitDiff.status === 'renamed' && gitDiff.hunks === undefined) {
+  } else if (
+    (gitDiff.status === 'renamed' && gitDiff.hunks === undefined) ||
+    (gitDiff.status === 'renamed' &&
+      Array.isArray(gitDiff.hunks) &&
+      gitDiff.hunks.length === 0)
+  ) {
     changes.push({
       type: 'renamedOnly',
       oldFilePath: toFilePath(gitDiff.oldPath),
       newFilePath: toFilePath(gitDiff.newPath)
     })
-  } else if (gitDiff.status === 'renamed' && Array.isArray(gitDiff.hunks)) {
+  } else if (
+    gitDiff.status === 'renamed' &&
+    Array.isArray(gitDiff.hunks) &&
+    gitDiff.hunks.length > 0
+  ) {
     changes.push({
       type: 'renamedAndModified',
       oldFilePath: toFilePath(gitDiff.oldPath),
