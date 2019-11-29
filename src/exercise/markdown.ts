@@ -13,15 +13,14 @@ function isCodeChange(
   return 'code' in change
 }
 
-function strike(text: string, canStrike = (char: string) => true): string {
+function strike(
+  text: string,
+  canStrike: (char: string) => Boolean = () => true
+): string {
   return text
     .split('')
     .map(char => (canStrike(char) ? char + '\u0336' : char))
     .join('')
-}
-
-function strikeAll(text: string): string {
-  return strike(text)
 }
 
 function strikeNonWhitespaceOnly(text: string): string {
