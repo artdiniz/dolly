@@ -85,17 +85,28 @@ export function toChapterMarkdown(exerciseChapter: IExerciseChapter): string {
   const introMarkdown = code`
     # Exercício: ${exerciseChapter.title}
 
-    ## Objetivo
-
-    ${exerciseChapter.objective}
-
-    ## Passo a passo com código
+    ${
+      exerciseChapter.objective.length === 0
+        ? ''
+        : code`
+          ## Objetivo
+      
+          ${exerciseChapter.objective}
+        `
+    }
   `
 
-  const exerciseItemsMarkdown = exerciseChapter.steps
-    .map(item => toExerciseStepMarkdown(item))
-    .join('\n\n')
-    .trim()
+  const exerciseItemsMarkdown =
+    exerciseChapter.steps.length === 0
+      ? ''
+      : code`
+        ## Passo a passo com código
+
+        ${exerciseChapter.steps
+          .map(item => toExerciseStepMarkdown(item))
+          .join('\n\n')
+          .trim()}
+      `
 
   return introMarkdown + '\n\n' + exerciseItemsMarkdown + '\n'
 }
