@@ -73,8 +73,8 @@ async function run(directories: IArgDirectories) {
         path.join(directories.diff, chapterFileName + '.diff')
       )
     }))
-    .map(async chapterGenerationInputInfoPromise =>
-      generateChapter(await chapterGenerationInputInfoPromise)
+    .map(async chapterFilesContentPromise =>
+      generateChapter(await chapterFilesContentPromise)
     )
     .map(async chapterGenerationPromise =>
       writeGenerationResultToFileSystem(await chapterGenerationPromise, directories)
