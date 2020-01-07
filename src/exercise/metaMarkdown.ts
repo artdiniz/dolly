@@ -187,7 +187,7 @@ export function toChapterMetaMarkdown(exerciseChapter: IExerciseChapter): string
   const chapterStepsMarkdown = toStepsMetaMarkdown(exerciseChapter.steps).join(
     '\n\n\n\n\n'
   )
-  chapterStepsMarkdown
+
   return code`
     ${exerciseChapter.title}
     ---
