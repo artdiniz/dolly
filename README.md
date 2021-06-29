@@ -1,4 +1,3 @@
 # `@tubaina/dolly`
 
-> Gerador de apostila de exercícios 
-> Exercícios guaraná, exercícios guaraná! O melhor =D
+> Generate step-by-step coding exercises from git diffs
